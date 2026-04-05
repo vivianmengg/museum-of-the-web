@@ -15,11 +15,42 @@ export default function Nav() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === "SIGNED_IN") syncLocalExhibits();
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  async function syncLocalExhibits() {
+    try {
+      const raw = localStorage.getItem("motw_local_exhibits");
+      if (!raw) return;
+      const local = JSON.parse(raw);
+      if (!Array.isArray(local) || local.length === 0) return;
+
+      await Promise.all(local.map((exhibit) =>
+        fetch("/api/exhibits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: exhibit.title,
+            statement: exhibit.statement ?? "",
+            objects: exhibit.objects.map((o: { object: { id: string; institution: string }; note: string }, i: number) => ({
+              object_id: o.object.id,
+              institution: o.object.institution,
+              curator_note: o.note ?? "",
+              position: i,
+            })),
+          }),
+        })
+      ));
+
+      localStorage.removeItem("motw_local_exhibits");
+    } catch {
+      // Non-critical — local exhibits stay if sync fails
+    }
+  }
 
   async function handleSignOut() {
     const supabase = createClient();
