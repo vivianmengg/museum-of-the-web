@@ -195,13 +195,6 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
         </div>
       )}
 
-      <div className={`fixed bottom-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-opacity duration-300 ${showZoomHint ? "opacity-100" : "opacity-0"}`}>
-        <div className="bg-[var(--foreground)]/80 text-[var(--background)] text-xs px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-2">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className={`w-1 h-1 rounded-full ${i === zoom ? "bg-current scale-125" : "bg-current opacity-30"}`} />
-          ))}
-        </div>
-      </div>
 
       <Masonry
         breakpointCols={mounted ? breakpoints : breakpoints.default}
