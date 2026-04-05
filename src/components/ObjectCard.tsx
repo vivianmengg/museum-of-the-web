@@ -8,7 +8,7 @@ import { useFavorites } from "@/lib/useFavorites";
 import { useLocalExhibits } from "@/lib/useLocalExhibits";
 import ExhibitPicker from "./ExhibitPicker";
 
-export default function ObjectCard({ object, fillParent }: { object: MuseumObject; fillParent?: boolean }) {
+export default function ObjectCard({ object, fillParent, priority }: { object: MuseumObject; fillParent?: boolean; priority?: boolean }) {
   const { isFavorited, toggle: toggleFavorite } = useFavorites();
   const { objectExhibits } = useLocalExhibits();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -37,6 +37,8 @@ export default function ObjectCard({ object, fillParent }: { object: MuseumObjec
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover"
+            quality={60}
+            priority={priority}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200">

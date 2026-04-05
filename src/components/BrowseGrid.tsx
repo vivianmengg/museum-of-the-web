@@ -201,8 +201,8 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
         className="flex gap-1"
         columnClassName="flex flex-col gap-1 transition-[width] duration-200 ease-out"
       >
-        {objects.map((obj) => (
-          <ObjectCard key={obj.id} object={obj} />
+        {objects.map((obj, i) => (
+          <ObjectCard key={obj.id} object={obj} priority={i < 12} />
         ))}
       </Masonry>
 
