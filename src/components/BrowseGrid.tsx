@@ -163,10 +163,21 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
   function handleFilter(newFilters: BrowseFilters) {
     filtersRef.current = newFilters;
     hasMoreRef.current = true;
+    setHasMore(true);
     pageRef.current = 0;
     setObjects([]);
     sessionStorage.removeItem(SESSION_KEY);
     fetchPage(0, newFilters, true);
+  }
+
+  function handleRefresh() {
+    hasMoreRef.current = true;
+    setHasMore(true);
+    pageRef.current = 0;
+    setObjects([]);
+    sessionStorage.removeItem(SESSION_KEY);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    fetchPage(0, filtersRef.current, true);
   }
 
   useEffect(() => {
@@ -192,12 +203,21 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
         <p className="text-xs text-[var(--muted)]">
           {total > 0 ? `${total.toLocaleString()} objects` : ""}
         </p>
-        <button
-          onClick={() => setShowFilters((v) => !v)}
-          className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-3 py-1 border border-[var(--border)] rounded-full"
-        >
-          {showFilters ? "Hide filters" : "Filter"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-3 py-1 border border-[var(--border)] rounded-full"
+            aria-label="Refresh"
+          >
+            ↺
+          </button>
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-3 py-1 border border-[var(--border)] rounded-full"
+          >
+            {showFilters ? "Hide filters" : "Filter"}
+          </button>
+        </div>
       </div>
 
       {showFilters && (
