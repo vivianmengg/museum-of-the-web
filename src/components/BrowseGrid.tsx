@@ -39,6 +39,7 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
   const pageRef = useRef(1);
   const filtersRef = useRef<BrowseFilters>(initialFilters);
   const hasMoreRef = useRef(initialObjects.length < initialTotal);
+  const [hasMore, setHasMore] = useState(initialObjects.length < initialTotal);
 
   const zoom = usePinchZoom(gridRef);
   const breakpoints = zoomToBreakpoints(zoom);
@@ -113,6 +114,12 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
       const incoming: MuseumObject[] = data.objects ?? [];
       const newTotal: number = data.total ?? 0;
 
+      if (!replace && incoming.length === 0) {
+        hasMoreRef.current = false;
+        setHasMore(false);
+        return;
+      }
+
       setObjects((prev) => {
         const seenIds = new Set(prev.map((o) => o.id));
         const seenKeys = new Set(prev.map((o) => dedupeKey(o.title, o.artistName)));
@@ -126,7 +133,9 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
               seenKeys.add(k);
               return true;
             });
-        hasMoreRef.current = (replace ? fresh.length : prev.length + fresh.length) < newTotal;
+        const more = fresh.length > 0 && (replace ? fresh.length : prev.length + fresh.length) < newTotal;
+        hasMoreRef.current = more;
+        setHasMore(more);
         return replace ? fresh : [...prev, ...fresh];
       });
       setTotal(newTotal);
@@ -209,6 +218,9 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
       </Masonry>
 
       <div ref={sentinelRef} className="h-4" />
+      {!hasMore && objects.length > 0 && (
+        <p className="text-center text-xs text-[var(--muted)] py-8">You've seen everything for today. Come back tomorrow for a new selection.</p>
+      )}
     </div>
   );
 }
