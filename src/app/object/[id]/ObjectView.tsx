@@ -34,7 +34,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
 
       {/* Full-bleed image */}
       <div
-        className={`w-full bg-[#1a1916] flex items-center justify-center transition-all duration-500 ${
+        className={`relative w-full bg-[#1a1916] flex items-center justify-center transition-all duration-500 ${
           imgExpanded ? "min-h-screen" : "min-h-[55vh] max-h-[75vh]"
         }`}
         style={{ cursor: imgExpanded ? "zoom-out" : "zoom-in" }}
@@ -55,6 +55,20 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
         ) : (
           <div className="text-[#6b6560] text-sm py-24">No image available</div>
         )}
+
+        {/* Add to exhibit — floating over image */}
+        <div
+          className="absolute bottom-4 right-4 z-10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => setPickerOpen((v) => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-[var(--foreground)] rounded-full shadow hover:bg-white transition-colors"
+          >
+            <span className="text-sm leading-none">+</span> Add to exhibit
+          </button>
+          {pickerOpen && <ExhibitPicker object={object} onClose={closePicker} />}
+        </div>
       </div>
 
       {/* Two-column layout below image */}
@@ -110,18 +124,6 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
           {/* Right — interactive */}
           <div className="lg:sticky lg:top-20 lg:pl-16 pt-12 lg:pt-0">
             <PresencePanel objectId={object.id} currentUserId={currentUserId} />
-
-            {/* Add to exhibit */}
-            <div className="relative mb-8">
-              <button
-                onClick={() => setPickerOpen((v) => !v)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-[var(--border)] rounded-full text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--muted)] transition-colors"
-              >
-                <span className="text-base leading-none">+</span> Add to exhibit
-              </button>
-              {pickerOpen && <ExhibitPicker object={object} onClose={closePicker} />}
-            </div>
-
             <TracesSection
               objectId={object.id}
               institution={object.institution}
