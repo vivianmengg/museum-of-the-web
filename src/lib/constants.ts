@@ -6,4 +6,5 @@ export type BrowseFilters = {
   medium?: string;
   dateBegin?: string;
   dateEnd?: string;
+  publicDomain?: boolean;
 };

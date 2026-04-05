@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     medium: searchParams.get("medium") ?? undefined,
     dateBegin: searchParams.get("dateBegin") ?? undefined,
     dateEnd: searchParams.get("dateEnd") ?? undefined,
+    publicDomain: searchParams.get("publicDomain") === "true" ? true : undefined,
   };
 
   try {

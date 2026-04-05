@@ -40,6 +40,7 @@ export async function fetchMomaPage(
   filters: BrowseFilters,
   page: number
 ): Promise<{ objects: MuseumObject[]; total: number }> {
+  if (filters.publicDomain) return { objects: [], total: 0 };
   try {
     const supabase = await createClient();
 

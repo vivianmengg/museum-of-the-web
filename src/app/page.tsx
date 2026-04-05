@@ -28,7 +28,7 @@ function interleaveDeduped(...arrays: MuseumObject[][]): MuseumObject[] {
 }
 
 type Props = {
-  searchParams: Promise<{ q?: string; culture?: string; medium?: string; dateBegin?: string; dateEnd?: string }>;
+  searchParams: Promise<{ q?: string; culture?: string; medium?: string; dateBegin?: string; dateEnd?: string; publicDomain?: string }>;
 };
 
 export default async function Home({ searchParams }: Props) {
@@ -39,6 +39,7 @@ export default async function Home({ searchParams }: Props) {
     medium: params.medium,
     dateBegin: params.dateBegin,
     dateEnd: params.dateEnd,
+    publicDomain: params.publicDomain === "true" ? true : undefined,
   };
 
   const [met, aic, rijks, moma] = await Promise.all([

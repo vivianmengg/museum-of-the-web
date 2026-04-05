@@ -13,6 +13,7 @@ export default function FilterBar({ onFilter }: Props) {
   const [medium, setMedium] = useState("");
   const [dateBegin, setDateBegin] = useState("");
   const [dateEnd, setDateEnd] = useState("");
+  const [publicDomain, setPublicDomain] = useState(false);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +23,7 @@ export default function FilterBar({ onFilter }: Props) {
       medium: medium || undefined,
       dateBegin: dateBegin || undefined,
       dateEnd: dateEnd || undefined,
+      publicDomain: publicDomain || undefined,
     });
   }
 
@@ -31,6 +33,7 @@ export default function FilterBar({ onFilter }: Props) {
     setMedium("");
     setDateBegin("");
     setDateEnd("");
+    setPublicDomain(false);
     onFilter({});
   }
 
@@ -77,6 +80,15 @@ export default function FilterBar({ onFilter }: Props) {
           className="border border-[var(--border)] bg-white px-3 py-1.5 text-sm placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] w-20"
         />
       </div>
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={publicDomain}
+          onChange={(e) => setPublicDomain(e.target.checked)}
+          className="accent-[var(--foreground)] w-3.5 h-3.5"
+        />
+        <span className="text-sm text-[var(--muted)]">Public domain only</span>
+      </label>
       <button
         type="submit"
         className="px-4 py-1.5 text-sm bg-[var(--foreground)] text-[var(--background)] hover:opacity-80 transition-opacity"
