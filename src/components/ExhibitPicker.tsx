@@ -114,9 +114,12 @@ export default function ExhibitPicker({ object, onClose }: Props) {
     );
   }
 
-  async function handleCreate(e?: React.FormEvent) {
-    e?.preventDefault();
-    if (!newTitle.trim()) return;
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTitle.trim() || submitting) return;
+    setSubmitting(true);
     if (signedIn) {
       const res = await fetch("/api/exhibits", {
         method: "POST",
@@ -133,6 +136,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
     }
     setNewTitle("");
     setCreating(false);
+    setSubmitting(false);
   }
 
   function handleLocalToggle(exhibitId: string) {
@@ -237,13 +241,10 @@ export default function ExhibitPicker({ object, onClose }: Props) {
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Exhibit name…"
               className="flex-1 text-xs bg-transparent outline-none placeholder:text-[var(--border)]"
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setCreating(false);
-                if (e.key === "Enter") { e.preventDefault(); handleCreate(); }
-              }}
+              onKeyDown={(e) => { if (e.key === "Escape") setCreating(false); }}
             />
-            <button type="submit" onClick={() => handleCreate()} className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-1">
-              Add
+            <button type="submit" disabled={submitting} className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-1 disabled:opacity-40">
+              {submitting ? "…" : "Add"}
             </button>
             <button type="button" onClick={() => setCreating(false)} className="text-[10px] text-[var(--muted)] hover:text-[var(--foreground)]">✕</button>
           </form>
