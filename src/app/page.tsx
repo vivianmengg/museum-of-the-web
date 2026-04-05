@@ -74,6 +74,7 @@ export default async function Home({ searchParams }: Props) {
         </p>
       )}
       <BrowseGrid
+        key={JSON.stringify(filters)}
         initialObjects={objects}
         initialTotal={total}
         initialFilters={filters}
