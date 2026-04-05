@@ -22,7 +22,6 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
 
   const metaRows = [
     { label: "Artist", value: object.artistName },
-    { label: "Date", value: object.date },
     { label: "Culture", value: object.culture },
     { label: "Medium", value: object.medium },
     { label: "Dimensions", value: object.dimensions },
@@ -77,8 +76,10 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
             <h1 className="font-[family-name:var(--font-lora)] italic text-3xl sm:text-4xl leading-snug mb-2">
               {object.title}
             </h1>
-            {object.artistName && (
-              <p className="text-[var(--muted)] text-base mb-8">{object.artistName}</p>
+            {(object.artistName || object.date) && (
+              <p className="text-[var(--muted)] text-base mb-8">
+                {[object.artistName, object.date].filter(Boolean).join(", ")}
+              </p>
             )}
 
             {metaRows.length > 0 && (
