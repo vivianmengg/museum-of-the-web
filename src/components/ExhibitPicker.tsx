@@ -112,6 +112,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
         : e
       )
     );
+    onClose();
   }
 
   const [submitting, setSubmitting] = useState(false);
@@ -145,6 +146,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
     } else {
       local.addObject(exhibitId, object);
     }
+    onClose();
   }
 
   const exhibits = signedIn ? cloudExhibits : local.exhibits;
