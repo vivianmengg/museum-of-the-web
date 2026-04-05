@@ -50,8 +50,9 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (!saved) return;
-      const { objs, pg, tot, scrollY } = JSON.parse(saved);
-      if (Array.isArray(objs) && objs.length > initialObjects.length) {
+      const { objs, pg, tot, scrollY, filters: savedFilters } = JSON.parse(saved);
+      const filtersMatch = JSON.stringify(savedFilters ?? {}) === JSON.stringify(initialFilters);
+      if (filtersMatch && Array.isArray(objs) && objs.length > initialObjects.length) {
         setObjects(objs);
         setTotal(tot);
         pageRef.current = pg;
@@ -64,7 +65,7 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
         return; // skip pre-warm — we already have the objects
       }
     } catch { /* ignore */ }
-    // No saved state — pre-warm next page
+    // No saved state (or stale) — pre-warm next page
     if (hasMoreRef.current) fetchPage(pageRef.current, filtersRef.current, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -136,6 +137,7 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
         try {
           sessionStorage.setItem(SESSION_KEY, JSON.stringify({
             objs: prev, pg: nextPage + 1, tot: newTotal, scrollY: window.scrollY,
+            filters: filtersRef.current,
           }));
         } catch { /* storage full */ }
         return prev;
