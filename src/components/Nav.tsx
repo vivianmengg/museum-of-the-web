@@ -23,9 +23,12 @@ export default function Nav() {
   }, []);
 
   async function syncLocalExhibits() {
+    // Grab and clear atomically so concurrent SIGNED_IN events don't double-sync
+    const raw = localStorage.getItem("motw_local_exhibits");
+    if (!raw) return;
+    localStorage.removeItem("motw_local_exhibits");
+
     try {
-      const raw = localStorage.getItem("motw_local_exhibits");
-      if (!raw) return;
       const local = JSON.parse(raw);
       if (!Array.isArray(local) || local.length === 0) return;
 
@@ -45,10 +48,9 @@ export default function Nav() {
           }),
         })
       ));
-
-      localStorage.removeItem("motw_local_exhibits");
     } catch {
-      // Non-critical — local exhibits stay if sync fails
+      // Restore if sync failed so nothing is lost
+      localStorage.setItem("motw_local_exhibits", raw);
     }
   }
 
