@@ -64,10 +64,10 @@ async function TracesTab({ userId }: { userId: string }) {
                 <p className="text-sm font-medium leading-snug group-hover:underline underline-offset-2 line-clamp-1">
                   {(art?.title as string) || trace.object_id}
                 </p>
-                {art?.artist_name && (
+                {(art?.artist_name as string | undefined) && (
                   <p className="text-xs text-[var(--muted)] mt-0.5 line-clamp-1">
-                    {art.artist_name as string}
-                    {art.date ? ` · ${art.date}` : ""}
+                    {art?.artist_name as string}
+                    {(art?.date as string | undefined) ? ` · ${art?.date as string}` : ""}
                   </p>
                 )}
                 <p className="text-sm italic text-[var(--foreground)]/80 mt-2 leading-relaxed">
