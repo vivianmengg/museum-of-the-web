@@ -64,13 +64,19 @@ export default function TracesSection({ objectId, institution, currentUserId }: 
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
             placeholder="Something about this caught your eye…"
             maxLength={280}
             rows={3}
             className="w-full border border-[var(--border)] rounded-2xl px-4 py-3 text-sm bg-transparent focus:outline-none focus:border-[var(--muted)] placeholder:text-[var(--muted)] resize-none"
           />
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs text-[var(--muted)]">{text.length}/280</span>
+            <span className="text-xs text-[var(--muted)]">{text.length}/280 · ⌘↵ to send</span>
             <button
               type="submit"
               disabled={submitting || !text.trim()}
