@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { MuseumObject } from "@/types";
 import TracesSection from "@/components/TracesSection";
 import PresencePanel from "@/components/PresencePanel";
+import ExhibitPicker from "@/components/ExhibitPicker";
 
 const INSTITUTION_LABELS: Record<string, string> = {
   met: "The Metropolitan Museum of Art",
@@ -16,6 +17,8 @@ const INSTITUTION_LABELS: Record<string, string> = {
 
 export default function ObjectView({ object, currentUserId }: { object: MuseumObject; currentUserId: string | null }) {
   const [imgExpanded, setImgExpanded] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const closePicker = useCallback(() => setPickerOpen(false), []);
 
   const metaRows = [
     { label: "Artist", value: object.artistName },
@@ -106,6 +109,18 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
           {/* Right — interactive */}
           <div className="lg:sticky lg:top-20 lg:pl-16 pt-12 lg:pt-0">
             <PresencePanel objectId={object.id} currentUserId={currentUserId} />
+
+            {/* Add to exhibit */}
+            <div className="relative mb-8">
+              <button
+                onClick={() => setPickerOpen((v) => !v)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-[var(--border)] rounded-full text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--muted)] transition-colors"
+              >
+                <span className="text-base leading-none">+</span> Add to exhibit
+              </button>
+              {pickerOpen && <ExhibitPicker object={object} onClose={closePicker} />}
+            </div>
+
             <TracesSection
               objectId={object.id}
               institution={object.institution}
