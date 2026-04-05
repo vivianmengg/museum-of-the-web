@@ -78,7 +78,17 @@ export default async function ExhibitPage({
         }}
         backHref="/"
         backLabel="Browse"
-        actions={isOwner ? <UnpublishButton exhibitId={data.id} /> : undefined}
+        actions={isOwner ? (
+          <div className="flex items-center gap-6">
+            <a
+              href={`/exhibit/${data.id}/edit`}
+              className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            >
+              Edit
+            </a>
+            <UnpublishButton exhibitId={data.id} />
+          </div>
+        ) : undefined}
       />
     );
   }

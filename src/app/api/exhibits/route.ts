@@ -80,14 +80,32 @@ export async function PATCH(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  const { id, is_public } = await request.json();
+  const body = await request.json();
+  const { id, is_public, title, statement, remove_object_id } = body;
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+
+  // Remove a single object from exhibit
+  if (remove_object_id) {
+    const { error } = await supabase
+      .from("exhibit_objects")
+      .delete()
+      .eq("exhibit_id", id)
+      .eq("object_id", remove_object_id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
+  // Update exhibit fields
+  const updates: Record<string, unknown> = {};
+  if (is_public !== undefined) updates.is_public = is_public;
+  if (title !== undefined) updates.title = title.trim();
+  if (statement !== undefined) updates.statement = statement.trim();
 
   const { error } = await supabase
     .from("exhibits")
-    .update({ is_public })
+    .update(updates)
     .eq("id", id)
-    .eq("user_id", user.id); // RLS + ownership check
+    .eq("user_id", user.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
