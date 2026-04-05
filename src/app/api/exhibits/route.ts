@@ -77,15 +77,29 @@ export async function PATCH(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-
   const supabase = await createClient();
+
+  // Fetch single exhibit by id
+  if (id) {
+    const { data, error } = await supabase
+      .from("exhibits")
+      .select("*, users(username), exhibit_objects(object_id, institution, curator_note, position)")
+      .eq("id", id)
+      .single();
+    if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(data);
+  }
+
+  // Fetch all exhibits for the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json([], { status: 200 });
+
   const { data, error } = await supabase
     .from("exhibits")
-    .select("*, users(username), exhibit_objects(object_id, institution, curator_note, position)")
-    .eq("id", id)
-    .single();
+    .select("*, exhibit_objects(object_id, institution, curator_note, position)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
-  if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(data);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data ?? []);
 }
