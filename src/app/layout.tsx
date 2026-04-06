@@ -5,6 +5,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import { CurationProvider } from "@/components/CurationContext";
 import CurationTray from "@/components/CurationTray";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
           </footer>
           <CurationTray />
         </CurationProvider>
+        <Analytics />
       </body>
     </html>
   );
