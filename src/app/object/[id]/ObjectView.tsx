@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { MuseumObject } from "@/types";
 import TracesSection from "@/components/TracesSection";
 import PresencePanel from "@/components/PresencePanel";
@@ -19,6 +20,28 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
   const [imgExpanded, setImgExpanded] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const closePicker = useCallback(() => setPickerOpen(false), []);
+
+  // Track presence on global site channel as "viewing"
+  useEffect(() => {
+    const supabase = createClient();
+    let anonId = sessionStorage.getItem("motw_anon_id");
+    if (!anonId) {
+      anonId = crypto.randomUUID();
+      sessionStorage.setItem("motw_anon_id", anonId);
+    }
+    const channel = supabase.channel("motw:site");
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await channel.track({
+          user_id: anonId,
+          status: "viewing",
+          objectId: object.id,
+          objectTitle: object.title,
+        });
+      }
+    });
+    return () => { supabase.removeChannel(channel); };
+  }, [object.id, object.title]);
 
   const metaRows = [
     { label: "Artist", value: object.artistName },

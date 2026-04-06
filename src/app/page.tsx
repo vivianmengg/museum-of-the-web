@@ -3,6 +3,7 @@ import { fetchAicPage } from "@/lib/aic";
 import { fetchRijksPage } from "@/lib/rijks";
 import { fetchMomaPage } from "@/lib/moma";
 import BrowseGrid from "@/components/BrowseGrid";
+import SitePresence from "@/components/SitePresence";
 import type { BrowseFilters } from "@/lib/constants";
 import type { MuseumObject } from "@/types";
 
@@ -59,6 +60,7 @@ export default async function Home({ searchParams }: Props) {
 
   return (
     <div className="px-2 py-2">
+      <SitePresence />
       {params.q && (
         <p className="text-xs text-[var(--muted)] px-1 mb-3">
           <span className="text-[var(--foreground)]">"{params.q}"</span>
