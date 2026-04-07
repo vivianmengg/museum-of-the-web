@@ -42,5 +42,6 @@ next-env.d.ts
 
 # local seed progress
 .met-seed-progress.json
+.met-highlights-progress.json
 .aic-seed-progress.json
 .rijks-seed-progress.json

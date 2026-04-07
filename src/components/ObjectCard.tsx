@@ -12,6 +12,7 @@ export default function ObjectCard({ object, fillParent, priority }: { object: M
   const { isFavorited, toggle: toggleFavorite } = useFavorites();
   const { objectExhibits } = useLocalExhibits();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const hearted = isFavorited(object.id);
   const pinnedCount = objectExhibits(object.id).length;
@@ -31,15 +32,18 @@ export default function ObjectCard({ object, fillParent, priority }: { object: M
           style={fillParent ? { height: "100%" } : { paddingBottom }}
         >
           <div className="absolute inset-0 animate-pulse bg-[#d8d4cc]" aria-hidden />
-          <Image
-            src={object.thumbnailUrl}
-            alt={object.title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
-            quality={60}
-            priority={priority}
-          />
+          {!imgError && (
+            <Image
+              src={object.thumbnailUrl}
+              alt={object.title}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover"
+              quality={60}
+              priority={priority}
+              onError={() => setImgError(true)}
+            />
+          )}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-200">
             <p className="text-white font-[family-name:var(--font-lora)] italic text-sm leading-snug line-clamp-2 drop-shadow">
