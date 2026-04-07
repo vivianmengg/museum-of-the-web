@@ -2,7 +2,7 @@ import probe from "probe-image-size";
 import type { MuseumObject } from "@/types";
 import { PAGE_SIZE } from "./constants";
 import type { BrowseFilters } from "./constants";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 
 export type { BrowseFilters };
 export { PAGE_SIZE };
@@ -114,7 +114,7 @@ export async function fetchMetObject(objectId: number): Promise<MuseumObject | n
 
   // ── 1. Check Supabase cache ───────────────────────────────────────────────
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data } = await supabase
       .from("objects_cache")
       .select("*")
@@ -159,7 +159,7 @@ export async function fetchMetObject(objectId: number): Promise<MuseumObject | n
   };
 
   // ── 3. Store in cache (best-effort, non-blocking) ─────────────────────────
-  createClient().then((supabase) =>
+  Promise.resolve(createStaticClient()).then((supabase) =>
     supabase.from("objects_cache").upsert(
       {
         id: object.id,
@@ -234,7 +234,7 @@ export async function fetchMetPage(
   const cacheIds = slice.map((id) => `met-${id}`);
   let cachedMap = new Map<string, Record<string, unknown>>();
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
     const { data: rows } = await supabase
       .from("objects_cache")
       .select("*")
