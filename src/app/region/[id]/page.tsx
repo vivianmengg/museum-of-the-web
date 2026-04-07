@@ -41,6 +41,7 @@ export default async function RegionDetailPage({ params }: { params: Promise<{ i
     .from("objects_cache")
     .select("*")
     .not("thumbnail_url", "is", null)
+    .neq("institution", "harvard")
     .limit(8000);
 
   const objects: MuseumObject[] = [];

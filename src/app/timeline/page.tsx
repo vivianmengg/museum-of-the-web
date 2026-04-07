@@ -153,6 +153,7 @@ export default async function TimelinePage() {
     .select("*")
     .not("thumbnail_url", "is", null)
     .not("year_begin", "is", null)
+    .neq("institution", "harvard")
     .gte("year_begin", -3000)
     .lte("year_begin",  2026)
     .order("year_begin")
@@ -163,6 +164,7 @@ export default async function TimelinePage() {
     .from("objects_cache")
     .select("*")
     .not("thumbnail_url", "is", null)
+    .neq("institution", "harvard")
     .is("year_begin", null)
     .neq("date", "")
     .limit(2000);
@@ -180,10 +182,17 @@ const rows = (cachedRows ?? []) as Record<string, unknown>[];
       if (!matchesCiv(row, civ)) continue;
       const obj = rowToMuseumObject(row);
       // Prefer the clean numeric years from the CSV seed; fall back to text parsing.
-      // Use midpoint of begin/end range for placement (e.g. 1450–1600 → 1525).
+      // For tight ranges (≤400 yrs) use midpoint; for wide ranges prefer year_end
+      // (a "500 BCE–750 CE" object is almost always from the later end of that span).
       const yb = row.year_begin as number | null;
       const ye = row.year_end   as number | null;
-      const year = yb !== null ? Math.round((yb + (ye ?? yb)) / 2) : parseDateToYear(obj.date);
+      let year: number | null;
+      if (yb !== null) {
+        const span = (ye ?? yb) - yb;
+        year = span > 400 ? (ye ?? yb) : Math.round((yb + (ye ?? yb)) / 2);
+      } else {
+        year = parseDateToYear(obj.date);
+      }
       if (year !== null && year >= -3000 && year <= 1900) {
         timelineObjects.push({ ...obj, civId: civ.id, year });
         civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
