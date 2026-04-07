@@ -141,6 +141,7 @@ function sampleSpread(arr: number[], count: number): number[] {
 export default async function TimelinePage() {
   const supabase = createStaticClient();
 
+  // Main objects: exclude harvard except Neolithic Chinese (year_begin <= -1500)
   const { data: seededRows } = await supabase
     .from("objects_cache")
     .select("*")
@@ -152,6 +153,17 @@ export default async function TimelinePage() {
     .order("year_begin")
     .limit(15000);
 
+  const { data: harvardNeolithicRows } = await supabase
+    .from("objects_cache")
+    .select("*")
+    .not("thumbnail_url", "is", null)
+    .not("year_begin", "is", null)
+    .eq("institution", "harvard")
+    .gte("year_begin", -6000)
+    .lte("year_begin", -1500)
+    .order("year_begin")
+    .limit(500);
+
   const { data: browseRows } = await supabase
     .from("objects_cache")
     .select("*")
@@ -161,7 +173,7 @@ export default async function TimelinePage() {
     .neq("date", "")
     .limit(2000);
 
-  const rows = [...(seededRows ?? []), ...(browseRows ?? [])] as Record<string, unknown>[];
+  const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
 
   const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));
   const timelineObjects: TimelineObject[] = [];
