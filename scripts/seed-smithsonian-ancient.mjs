@@ -26,15 +26,28 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 const KEYWORDS = [
+  // China Neolithic
   "neolithic china", "yangshao", "longshan", "majiayao", "dawenkou",
-  "liangzhu", "hongshan", "banpo", "jomon", "prehistoric vessel",
-  "predynastic", "chalcolithic", "uruk", "early dynastic mesopotamia",
+  "liangzhu", "hongshan", "banpo", "painted pottery china", "prehistoric china",
+  // Japan / Korea
+  "jomon", "mumun pottery", "ancient korea prehistoric",
+  // Near East
+  "prehistoric vessel", "chalcolithic", "uruk", "early dynastic mesopotamia",
+  "ancient near east neolithic", "halaf", "ubaid", "hassuna", "samarra pottery",
+  "tell halaf", "neolithic levant", "ain ghazal",
+  // Egypt
+  "predynastic egypt", "naqada", "badarian", "nagada pottery",
+  // South / Central Asia
+  "indus valley", "harappan", "mehrgarh", "ancient bactria",
+  // Broad
+  "neolithic pottery", "neolithic vessel", "stone age artifact", "prehistoric pottery",
 ];
 
 const MUSEUM_SOURCES = new Set([
   "National Museum of Asian Art",
   "Freer Gallery of Art",
   "Arthur M. Sackler Gallery",
+  "National Museum of Natural History",
 ]);
 
 async function searchSI(keyword, rows = 100) {
@@ -73,7 +86,7 @@ function extractObject(r) {
 
   return {
     id: `smithsonian-${r.id ?? r.content?.descriptiveNonRepeating?.record_ID}`,
-    institution: "met", // map to met for now so matchesCiv works
+    institution: "smithsonian",
     title: r.title || "Untitled",
     date: dateStr,
     culture,
@@ -93,14 +106,26 @@ function extractObject(r) {
 
 function parseYear(dateStr) {
   if (!dateStr) return null;
-  const s = dateStr.toLowerCase();
+  // Strip "ca.", "circa", "approx.", "late/early/mid" qualifiers so patterns match cleanly
+  const s = dateStr.toLowerCase()
+    .replace(/ca\.\s*/g, "")
+    .replace(/circa\s*/g, "")
+    .replace(/approx\.?\s*/g, "")
+    .replace(/\b(late|early|mid)\s+/g, "");
 
+  // "Nth millennium BCE" → convert ordinal to year (e.g. 3rd = -3000)
+  const millennium = s.match(/(\d+)(?:st|nd|rd|th)\s+millenni(?:um|a)\s*bce?/);
+  if (millennium) return -parseInt(millennium[1]) * 1000;
+
+  // "X–Y BCE" (handles stripped "ca. X-ca. Y BCE")
   const bceRange = s.match(/(\d+)[–\-](\d+)\s*bce?/);
   if (bceRange) return -parseInt(bceRange[1]);
 
+  // "X BCE"
   const bce = s.match(/(\d+)\s*bce?/);
   if (bce) return -parseInt(bce[1]);
 
+  // "X–Y" CE assumed
   const ceRange = s.match(/(\d+)[–\-](\d+)/);
   if (ceRange) return parseInt(ceRange[1]);
 
