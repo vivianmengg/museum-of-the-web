@@ -75,6 +75,7 @@ export default function Nav() {
       <div className="pointer-events-auto flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full px-2 py-1.5 shadow-sm">
         <Link href="/" className={navClass("/")}>Browse</Link>
         <Link href="/explore" className={navClass("/explore")}>Explore</Link>
+        <Link href="/timeline" className={navClass("/timeline")}>Timeline</Link>
         <Link href="/exhibits" className={navClass("/exhibits")}>My collection</Link>
       </div>
 

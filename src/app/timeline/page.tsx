@@ -1,0 +1,231 @@
+import { fetchMetObject } from "@/lib/met";
+import { createClient } from "@/lib/supabase/server";
+import TimelineView from "./TimelineView";
+import type { MuseumObject } from "@/types";
+
+export const revalidate = 3600;
+
+const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
+
+export interface Civilization {
+  id: string;
+  label: string;
+  color: string;
+  dept: number;
+  geo?: string;
+  query?: string;
+  // Strings that must appear in the department field to match this civ from cache
+  deptMatch: string[];
+  // Optional: culture field must contain one of these (for Asian Art sub-filtering)
+  cultureMatch?: string[];
+}
+
+export const CIVILIZATIONS: Civilization[] = [
+  { id: "egypt",       label: "Egypt",        color: "#B8960C", dept: 10, deptMatch: ["Egyptian"] },
+  { id: "near-east",   label: "Mesopotamia",  color: "#8B4513", dept: 3,  deptMatch: ["Near Eastern"] },
+  { id: "greece-rome", label: "Greece & Rome",color: "#6B4226", dept: 13, deptMatch: ["Greek", "Roman"] },
+  { id: "china",       label: "China",        color: "#4A7C59", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Chinese", "China"] },
+  { id: "india",       label: "South Asia",   color: "#B5621E", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Indian", "India", "South Asian"] },
+  { id: "japan",       label: "Japan",        color: "#6B4E8A", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Japanese", "Japan"] },
+  { id: "islamic",     label: "Islamic World",color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
+  { id: "europe",      label: "Europe",       color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
+];
+
+export type TimelineObject = MuseumObject & { civId: string; year: number };
+
+// How many cached objects per civ before we skip the API fallback
+const CACHE_SUFFICIENT = 20;
+
+// Per-bucket API fallback config
+const TIME_BUCKETS = [
+  { from: -3000, to: -1500 },
+  { from: -1500, to:  -300 },
+  { from:  -300, to:   500 },
+  { from:   500, to:  1200 },
+  { from:  1200, to:  1900 },
+];
+const PER_BUCKET = 8;
+
+function rowToMuseumObject(row: Record<string, unknown>): MuseumObject {
+  return {
+    id:           row.id as string,
+    institution:  row.institution as "met" | "aic" | "rijks" | "moma",
+    title:        (row.title as string) || "Untitled",
+    date:         (row.date as string) || "",
+    culture:      (row.culture as string) || "",
+    medium:       (row.medium as string) || "",
+    imageUrl:     (row.image_url as string | null) || null,
+    thumbnailUrl: (row.thumbnail_url as string | null) || null,
+    imageWidth:   (row.image_width as number) || 4,
+    imageHeight:  (row.image_height as number) || 3,
+    department:   (row.department as string) || "",
+    artistName:   (row.artist_name as string) || "",
+    creditLine:   (row.credit_line as string) || "",
+    dimensions:   (row.dimensions as string) || "",
+    objectUrl:    (row.object_url as string | null) || null,
+  };
+}
+
+function matchesCiv(row: Record<string, unknown>, civ: Civilization): boolean {
+  const dept    = ((row.department as string) || "").toLowerCase();
+  const culture = ((row.culture    as string) || "").toLowerCase();
+
+  const deptOk = civ.deptMatch.some((d) => dept.includes(d.toLowerCase()));
+  if (!deptOk) return false;
+
+  // For Asian Art, narrow by culture to avoid mixing China/Japan/India
+  if (civ.cultureMatch) {
+    return civ.cultureMatch.some((c) => culture.includes(c.toLowerCase()));
+  }
+  return true;
+}
+
+export function parseDateToYear(date: string): number | null {
+  if (!date) return null;
+  const s = date.toLowerCase().replace(/\bca\.?\b|\bcirca\b|\bc\.\b/g, "").trim();
+
+  const bceRange = s.match(/(\d+)\s*[–\-]\s*(\d+)\s*bc[e]?/);
+  if (bceRange) return -(parseInt(bceRange[1]) + parseInt(bceRange[2])) / 2;
+
+  const bceToCe = s.match(/(\d+)\s*bc[e]?\s*[–\-]\s*(\d+)\s*c[e]?/);
+  if (bceToCe) return (-parseInt(bceToCe[1]) + parseInt(bceToCe[2])) / 2;
+
+  const bce = s.match(/(\d+)\s*bc[e]?/);
+  if (bce) return -parseInt(bce[1]);
+
+  const ceRange = s.match(/(\d{1,4})\s*[–\-]\s*(\d{1,4})/);
+  if (ceRange) {
+    const a = parseInt(ceRange[1]), b = parseInt(ceRange[2]);
+    if (b > a && b <= 2100) return (a + b) / 2;
+  }
+
+  const century = s.match(/(\d+)(?:st|nd|rd|th)\s*century/);
+  if (century) return (parseInt(century[1]) - 1) * 100 + 50;
+
+  const year = s.match(/\b(\d{3,4})\b/);
+  if (year) return parseInt(year[1]);
+
+  return null;
+}
+
+async function fetchBucketIds(civ: Civilization, from: number, to: number): Promise<number[]> {
+  const url = new URL(`${MET_BASE}/search`);
+  url.searchParams.set("hasImages", "true");
+  url.searchParams.set("isPublicDomain", "true");
+  url.searchParams.set("q", civ.query ?? "the");
+  url.searchParams.set("departmentId", String(civ.dept));
+  url.searchParams.set("dateBegin", String(from));
+  url.searchParams.set("dateEnd", String(to));
+  if (civ.geo) url.searchParams.set("geoLocation", civ.geo);
+  try {
+    const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.objectIDs as number[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function sampleSpread(arr: number[], count: number): number[] {
+  if (arr.length <= count) return arr;
+  const step = arr.length / count;
+  return Array.from({ length: count }, (_, i) => arr[Math.floor(i * step)]);
+}
+
+export default async function TimelinePage() {
+  // ── 1. Pull from cache — prefer rows seeded from the CSV (have year_begin) ──
+  const supabase = await createClient();
+
+  // First: all objects with clean numeric years (seeded by seed-met-timeline.mjs)
+  const { data: seededRows } = await supabase
+    .from("objects_cache")
+    .select("*")
+    .not("thumbnail_url", "is", null)
+    .not("year_begin", "is", null)
+    .gte("year_begin", -3000)
+    .lte("year_begin",  1900)
+    .order("year_begin")
+    .limit(5000);
+
+  // Also pull any other cached objects that have a date string (browsed naturally)
+  const { data: browseRows } = await supabase
+    .from("objects_cache")
+    .select("*")
+    .not("thumbnail_url", "is", null)
+    .is("year_begin", null)
+    .neq("date", "")
+    .limit(2000);
+
+  const cachedRows = [...(seededRows ?? []), ...(browseRows ?? [])];
+
+  const rows = (cachedRows ?? []) as Record<string, unknown>[];
+
+  // ── 2. Map cached rows → civilization buckets ────────────────────────────────
+  const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));
+  const timelineObjects: TimelineObject[] = [];
+
+  for (const row of rows) {
+    for (const civ of CIVILIZATIONS) {
+      if (!matchesCiv(row, civ)) continue;
+      const obj = rowToMuseumObject(row);
+      // Prefer the clean numeric years from the CSV seed; fall back to text parsing.
+      // Use midpoint of begin/end range for placement (e.g. 1450–1600 → 1525).
+      const yb = row.year_begin as number | null;
+      const ye = row.year_end   as number | null;
+      const year = yb !== null ? Math.round((yb + (ye ?? yb)) / 2) : parseDateToYear(obj.date);
+      if (year !== null && year >= -3000 && year <= 1900) {
+        timelineObjects.push({ ...obj, civId: civ.id, year });
+        civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
+      }
+      break; // assign to first matching civ only
+    }
+  }
+
+  // ── 3. For civs below threshold, fill gaps from the Met API ─────────────────
+  const sparseCivs = CIVILIZATIONS.filter(
+    (c) => (civCounts.get(c.id) ?? 0) < CACHE_SUFFICIENT
+  );
+
+  if (sparseCivs.length > 0) {
+    const existingIds = new Set(timelineObjects.map((o) => o.id));
+
+    const bucketResults = await Promise.all(
+      sparseCivs.flatMap((civ) =>
+        TIME_BUCKETS.map(async ({ from, to }) => {
+          const ids = await fetchBucketIds(civ, from, to);
+          return { civ, ids: sampleSpread(ids, PER_BUCKET) };
+        })
+      )
+    );
+
+    const toFetch: Array<{ civ: Civilization; id: number }> = [];
+    const seenIds = new Set<number>();
+    for (const { civ, ids } of bucketResults) {
+      for (const id of ids) {
+        const cacheKey = `met-${id}`;
+        if (!seenIds.has(id) && !existingIds.has(cacheKey)) {
+          seenIds.add(id);
+          toFetch.push({ civ, id });
+        }
+      }
+    }
+
+    const fetched = await Promise.all(
+      toFetch.map(async ({ civ, id }) => {
+        const obj = await fetchMetObject(id);
+        return obj ? { civ, obj } : null;
+      })
+    );
+
+    for (const result of fetched) {
+      if (!result) continue;
+      const year = parseDateToYear(result.obj.date);
+      if (year !== null && year >= -3000 && year <= 1900) {
+        timelineObjects.push({ ...result.obj, civId: result.civ.id, year });
+      }
+    }
+  }
+
+  return <TimelineView objects={timelineObjects} civilizations={CIVILIZATIONS} />;
+}
