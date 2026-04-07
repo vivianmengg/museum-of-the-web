@@ -11,7 +11,7 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
   const ref = useState(() => ({ current: null as HTMLDivElement | null }))[0];
 
-  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/region");
+  const browseActive = pathname === "/" || pathname.startsWith("/timeline");
 
   useEffect(() => {
     function onDown(e: MouseEvent) {
@@ -41,7 +41,6 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
         <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-[var(--border)] rounded-xl shadow-md overflow-hidden p-1 z-50">
           <Link href="/"         onClick={() => setOpen(false)} className={itemClass}>All objects</Link>
           <Link href="/timeline" onClick={() => setOpen(false)} className={itemClass}>Timeline</Link>
-          <Link href="/region"   onClick={() => setOpen(false)} className={itemClass}>By region</Link>
         </div>
       )}
     </div>
@@ -113,7 +112,7 @@ export default function Nav() {
     }`;
   }
 
-  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/region");
+  const browseActive = pathname === "/" || pathname.startsWith("/timeline");
 
   return (
     <>
