@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { fetchMetObject } from "@/lib/met";
 import { createClient } from "@/lib/supabase/server";
 import TimelineView from "./TimelineView";
@@ -139,48 +138,7 @@ function sampleSpread(arr: number[], count: number): number[] {
   return Array.from({ length: count }, (_, i) => arr[Math.floor(i * step)]);
 }
 
-// ── Skeleton shown instantly while data loads ─────────────────────────────────
-function TimelineSkeleton() {
-  return (
-    <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]">
-      {/* Header */}
-      <div className="px-3 sm:px-6 pt-4 pb-3 border-b border-[var(--border)] shrink-0">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div>
-            <h1 className="font-serif text-lg sm:text-xl text-[var(--foreground)]">Art Through the Ages</h1>
-            <p className="text-xs text-[var(--muted)] mt-0.5 animate-pulse">Loading collection…</p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            {["±50 yr", "±200 yr", "±500 yr"].map((l) => (
-              <div key={l} className="text-xs px-2 sm:px-2.5 py-1 rounded-full border border-[var(--border)] text-[var(--muted)] opacity-50">{l}</div>
-            ))}
-          </div>
-        </div>
-        {/* Scrubber placeholder */}
-        <div className="relative pt-1 pb-5">
-          <div className="h-10 rounded bg-[var(--border)]/40 animate-pulse" />
-          <div className="relative h-5 mt-1" />
-        </div>
-      </div>
-      {/* Content placeholder */}
-      <div className="flex-1 overflow-hidden px-3 sm:px-6 py-4 space-y-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i}>
-            <div className="h-4 w-40 rounded bg-[var(--border)]/60 animate-pulse mb-3" />
-            <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
-              {Array.from({ length: 6 }).map((_, j) => (
-                <div key={j} className="aspect-square rounded-md bg-[var(--border)]/40 animate-pulse" />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Heavy data-fetch (runs async, streams in after skeleton) ──────────────────
-async function TimelineContent() {
+export default async function TimelinePage() {
   const supabase = await createClient();
 
   const { data: seededRows } = await supabase
@@ -279,13 +237,4 @@ async function TimelineContent() {
   }
 
   return <TimelineView objects={timelineObjects} civilizations={CIVILIZATIONS} />;
-}
-
-// ── Page: renders skeleton immediately, streams full timeline in ──────────────
-export default function TimelinePage() {
-  return (
-    <Suspense fallback={<TimelineSkeleton />}>
-      <TimelineContent />
-    </Suspense>
-  );
 }
