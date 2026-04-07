@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Masonry from "react-masonry-css";
 import ObjectCard from "./ObjectCard";
 import FilterBar from "./FilterBar";
@@ -14,18 +15,23 @@ function dedupeKey(title: string, artist: string) {
   return `${t}|${a}`;
 }
 
-type Props = {
-  initialObjects: MuseumObject[];
-  initialTotal: number;
-  initialFilters?: BrowseFilters;
-};
-
 const SESSION_KEY = "browse-state";
 
-export default function BrowseGrid({ initialObjects, initialTotal, initialFilters = {} }: Props) {
-  const [objects, setObjects] = useState<MuseumObject[]>(initialObjects);
+export default function BrowseGrid() {
+  const searchParams = useSearchParams();
+  const initialFilters: BrowseFilters = {
+    q:           searchParams.get("q")           ?? undefined,
+    culture:     searchParams.get("culture")     ?? undefined,
+    medium:      searchParams.get("medium")      ?? undefined,
+    dateBegin:   searchParams.get("dateBegin")   ?? undefined,
+    dateEnd:     searchParams.get("dateEnd")     ?? undefined,
+    publicDomain: searchParams.get("publicDomain") === "true" ? true : undefined,
+  };
+
+  const [objects, setObjects] = useState<MuseumObject[]>([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(initialTotal);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showZoomHint, setShowZoomHint] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,8 +44,8 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
   const loadingRef = useRef(false);
   const pageRef = useRef(1);
   const filtersRef = useRef<BrowseFilters>(initialFilters);
-  const hasMoreRef = useRef(initialObjects.length < initialTotal);
-  const [hasMore, setHasMore] = useState(initialObjects.length < initialTotal);
+  const hasMoreRef = useRef(true);
+  const [hasMore, setHasMore] = useState(true);
 
   const zoom = usePinchZoom(gridRef);
   const breakpoints = zoomToBreakpoints(zoom);
@@ -53,21 +59,22 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
       if (!saved) return;
       const { objs, pg, tot, scrollY, filters: savedFilters } = JSON.parse(saved);
       const filtersMatch = JSON.stringify(savedFilters ?? {}) === JSON.stringify(initialFilters);
-      if (filtersMatch && Array.isArray(objs) && objs.length > initialObjects.length) {
+      if (filtersMatch && Array.isArray(objs) && objs.length > 0) {
         setObjects(objs);
         setTotal(tot);
         pageRef.current = pg;
         setPage(pg);
         hasMoreRef.current = objs.length < tot;
-        // Restore scroll after layout settles
+        setHasMore(objs.length < tot);
+        setLoading(false);
         requestAnimationFrame(() => requestAnimationFrame(() => {
           window.scrollTo({ top: scrollY, behavior: "instant" });
         }));
-        return; // skip pre-warm — we already have the objects
+        return;
       }
     } catch { /* ignore */ }
-    // No saved state (or stale) — pre-warm next page
-    if (hasMoreRef.current) fetchPage(pageRef.current, filtersRef.current, false);
+    // No saved state — fetch page 0
+    fetchPage(0, filtersRef.current, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -113,6 +120,8 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
       const data = await res.json();
       const incoming: MuseumObject[] = data.objects ?? [];
       const newTotal: number = data.total ?? 0;
+
+      setLoading(false);
 
       if (!replace && incoming.length === 0) {
         hasMoreRef.current = false;
@@ -166,6 +175,7 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
     setHasMore(true);
     pageRef.current = 0;
     setObjects([]);
+    setLoading(true);
     sessionStorage.removeItem(SESSION_KEY);
     fetchPage(0, newFilters, true);
   }
@@ -175,6 +185,7 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
     setHasMore(true);
     pageRef.current = 0;
     setObjects([]);
+    setLoading(true);
     sessionStorage.removeItem(SESSION_KEY);
     window.scrollTo({ top: 0, behavior: "smooth" });
     fetchPage(0, filtersRef.current, true);
@@ -227,15 +238,27 @@ export default function BrowseGrid({ initialObjects, initialTotal, initialFilter
       )}
 
 
-      <Masonry
-        breakpointCols={mounted ? breakpoints : breakpoints.default}
-        className="flex gap-1"
-        columnClassName="flex flex-col gap-1 transition-[width] duration-200 ease-out"
-      >
-        {objects.map((obj, i) => (
-          <ObjectCard key={obj.id} object={obj} priority={i < 12} />
-        ))}
-      </Masonry>
+      {loading ? (
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-1">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="mb-1 break-inside-avoid rounded-md bg-[var(--border)]/40 animate-pulse"
+              style={{ height: `${120 + (i % 5) * 40}px` }}
+            />
+          ))}
+        </div>
+      ) : (
+        <Masonry
+          breakpointCols={mounted ? breakpoints : breakpoints.default}
+          className="flex gap-1"
+          columnClassName="flex flex-col gap-1 transition-[width] duration-200 ease-out"
+        >
+          {objects.map((obj, i) => (
+            <ObjectCard key={obj.id} object={obj} priority={i < 12} />
+          ))}
+        </Masonry>
+      )}
 
       <div ref={sentinelRef} className="h-4" />
       {!hasMore && objects.length > 0 && (

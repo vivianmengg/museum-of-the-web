@@ -98,26 +98,39 @@ export default function ExhibitPicker({ object, onClose }: Props) {
 
   async function handleCloudToggle(exhibit: CloudExhibit) {
     const supabase = createClient();
-    if (exhibit.hasObject) {
-      await supabase
+
+    // Re-fetch fresh state first to avoid acting on stale hasObject
+    const { data: existing } = await supabase
+      .from("exhibit_objects")
+      .select("object_id")
+      .eq("exhibit_id", exhibit.id)
+      .eq("object_id", object.id)
+      .maybeSingle();
+
+    const alreadyIn = !!existing;
+    console.log("toggle", { objectId: object.id, exhibitId: exhibit.id, alreadyIn, existing });
+
+    if (alreadyIn) {
+      const { error } = await supabase
         .from("exhibit_objects")
         .delete()
         .eq("exhibit_id", exhibit.id)
         .eq("object_id", object.id);
+      if (error) { console.error("delete error", error); return; }
     } else {
-      const maxPos = Math.max(-1, ...cloudExhibits
-        .find((e) => e.id === exhibit.id)?.thumbnails.map((_, i) => i) ?? []);
-      await supabase.from("exhibit_objects").insert({
+      const pos = cloudExhibits.find((e) => e.id === exhibit.id)?.objectCount ?? 0;
+      const { error } = await supabase.from("exhibit_objects").insert({
         exhibit_id: exhibit.id,
         object_id: object.id,
         institution: object.institution,
         curator_note: "",
-        position: maxPos + 1,
+        position: pos,
       });
+      if (error) { console.error("insert error", error); return; }
     }
     setCloudExhibits((prev) =>
       prev.map((e) => e.id === exhibit.id
-        ? { ...e, hasObject: !e.hasObject, objectCount: e.objectCount + (e.hasObject ? -1 : 1) }
+        ? { ...e, hasObject: !alreadyIn, objectCount: e.objectCount + (alreadyIn ? -1 : 1) }
         : e
       )
     );
