@@ -21,14 +21,14 @@ export interface Civilization {
 }
 
 export const CIVILIZATIONS: Civilization[] = [
-  { id: "egypt",       label: "Egypt",        color: "#B8960C", dept: 10, deptMatch: ["Egyptian"] },
-  { id: "near-east",   label: "Mesopotamia",  color: "#8B4513", dept: 3,  deptMatch: ["Near Eastern"] },
-  { id: "greece-rome", label: "Greece & Rome",color: "#6B4226", dept: 13, deptMatch: ["Greek", "Roman"] },
-  { id: "china",       label: "China",        color: "#4A7C59", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Chinese", "China"] },
-  { id: "india",       label: "South Asia",   color: "#B5621E", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Indian", "India", "South Asian"] },
-  { id: "japan",       label: "Japan",        color: "#6B4E8A", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Japanese", "Japan"] },
-  { id: "islamic",     label: "Islamic World",color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
-  { id: "europe",      label: "Europe",       color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
+  { id: "egypt",       label: "Nile Valley",           color: "#B8960C", dept: 10, deptMatch: ["Egyptian"] },
+  { id: "near-east",   label: "Ancient Near East",     color: "#8B4513", dept: 3,  deptMatch: ["Near Eastern"] },
+  { id: "greece-rome", label: "Eastern Mediterranean", color: "#6B4226", dept: 13, deptMatch: ["Greek", "Roman"] },
+  { id: "china",       label: "East Asia — China",     color: "#4A7C59", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Chinese", "China"] },
+  { id: "india",       label: "South Asia",            color: "#B5621E", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Indian", "India", "South Asian"] },
+  { id: "japan",       label: "East Asia — Japan",     color: "#6B4E8A", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Japanese", "Japan"] },
+  { id: "islamic",     label: "Islamic World",         color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
+  { id: "europe",      label: "Europe",                color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
 ];
 
 export type TimelineObject = MuseumObject & { civId: string; year: number };
