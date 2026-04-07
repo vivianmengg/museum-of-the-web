@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <CurationProvider>
           <Nav />
-          <main className="flex-1 pt-14">{children}</main>
+          <main className="flex-1 pt-14 pb-20 sm:pb-0">{children}</main>
           <footer className="py-12 text-center text-xs text-[var(--muted)] opacity-50">
             objects belong to their institutions. memories belong to you.
           </footer>
