@@ -7,6 +7,47 @@ import SearchBar from "./SearchBar";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+function BrowseDropdown({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useState(() => ({ current: null as HTMLDivElement | null }))[0];
+
+  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/region");
+
+  useEffect(() => {
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [ref]);
+
+  const baseClass = `text-sm px-3 py-0.5 rounded-full transition-colors ${
+    browseActive
+      ? "bg-[var(--foreground)] text-[var(--background)]"
+      : "hover:bg-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+  }`;
+
+  const itemClass = "flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--border)] transition-colors rounded-md";
+
+  return (
+    <div className="relative" ref={(el) => { ref.current = el; }}>
+      <button onClick={() => setOpen((v) => !v)} className={baseClass}>
+        Browse
+        <svg className="inline ml-1 mb-px" width="8" height="8" viewBox="0 0 8 8" fill="none">
+          <path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-[var(--border)] rounded-xl shadow-md overflow-hidden p-1 z-50">
+          <Link href="/"        onClick={() => setOpen(false)} className={itemClass}>All objects</Link>
+          <Link href="/timeline" onClick={() => setOpen(false)} className={itemClass}>Timeline</Link>
+          <Link href="/region"   onClick={() => setOpen(false)} className={itemClass}>By region</Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -73,9 +114,8 @@ export default function Nav() {
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 pointer-events-none">
       {/* Left: nav links */}
       <div className="pointer-events-auto flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full px-2 py-1.5 shadow-sm">
-        <Link href="/" className={navClass("/")}>Browse</Link>
+        <BrowseDropdown pathname={pathname} />
         <Link href="/explore" className={navClass("/explore")}>Explore</Link>
-        <Link href="/timeline" className={navClass("/timeline")}>Timeline</Link>
         <Link href="/exhibits" className={navClass("/exhibits")}>My collection</Link>
       </div>
 

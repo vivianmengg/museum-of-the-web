@@ -48,6 +48,7 @@ const TIME_BUCKETS = [
   { from:  -300, to:   500 },
   { from:   500, to:  1200 },
   { from:  1200, to:  1900 },
+  { from:  1900, to:  2026 },
 ];
 const PER_BUCKET = 8;
 
@@ -71,7 +72,7 @@ function rowToMuseumObject(row: Record<string, unknown>): MuseumObject {
   };
 }
 
-function matchesCiv(row: Record<string, unknown>, civ: Civilization): boolean {
+export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boolean {
   const dept    = ((row.department as string) || "").toLowerCase();
   const culture = ((row.culture    as string) || "").toLowerCase();
 
@@ -87,7 +88,11 @@ function matchesCiv(row: Record<string, unknown>, civ: Civilization): boolean {
 
 export function parseDateToYear(date: string): number | null {
   if (!date) return null;
-  const s = date.toLowerCase().replace(/\bca\.?\b|\bcirca\b|\bc\.\b/g, "").trim();
+  const s = date.toLowerCase()
+    .replace(/\bca\.?\b|\bcirca\b|\bc\.\b/g, "")
+    .replace(/b\.c\.e?\./g, "bce")   // normalize B.C.E. / B.C. → bce
+    .replace(/a\.d\./g, "ce")         // normalize A.D. → ce
+    .trim();
 
   const bceRange = s.match(/(\d+)\s*[–\-]\s*(\d+)\s*bc[e]?/);
   if (bceRange) return -(parseInt(bceRange[1]) + parseInt(bceRange[2])) / 2;
@@ -149,9 +154,9 @@ export default async function TimelinePage() {
     .not("thumbnail_url", "is", null)
     .not("year_begin", "is", null)
     .gte("year_begin", -3000)
-    .lte("year_begin",  1900)
+    .lte("year_begin",  2026)
     .order("year_begin")
-    .limit(5000);
+    .limit(15000);
 
   // Also pull any other cached objects that have a date string (browsed naturally)
   const { data: browseRows } = await supabase
@@ -164,7 +169,7 @@ export default async function TimelinePage() {
 
   const cachedRows = [...(seededRows ?? []), ...(browseRows ?? [])];
 
-  const rows = (cachedRows ?? []) as Record<string, unknown>[];
+const rows = (cachedRows ?? []) as Record<string, unknown>[];
 
   // ── 2. Map cached rows → civilization buckets ────────────────────────────────
   const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));

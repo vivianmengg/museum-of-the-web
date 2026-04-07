@@ -10,7 +10,7 @@ interface Props {
 }
 
 const START = -3000;
-const END   = 1900;
+const END   = 2026;
 const RANGE = END - START;
 
 function formatYear(y: number): string {
@@ -34,7 +34,9 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  -664, end:  -332, label: "Late Period" },
     { start:  -332, end:   -30, label: "Ptolemaic Period" },
     { start:   -30, end:   641, label: "Roman Egypt" },
-    { start:   641, end:  1900, label: "Islamic Egypt" },
+    { start:   641, end:  1798, label: "Islamic Egypt" },
+    { start:  1798, end:  1952, label: "Colonial & Khedivate" },
+    { start:  1952, end:  2026, label: "Modern Egypt" },
   ],
   "near-east": [
     { start: -3500, end: -2334, label: "Sumerian" },
@@ -48,6 +50,7 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  -330, end:   224, label: "Hellenistic / Parthian" },
     { start:   224, end:   651, label: "Sasanian Empire" },
     { start:   651, end:  1900, label: "Islamic Period" },
+    { start:  1900, end:  2026, label: "Modern Period" },
   ],
   "greece-rome": [
     { start: -3000, end: -1100, label: "Bronze Age / Mycenaean" },
@@ -58,6 +61,7 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:   -27, end:   284, label: "Roman Empire" },
     { start:   284, end:   476, label: "Late Roman Empire" },
     { start:   476, end:  1453, label: "Byzantine Empire" },
+    { start:  1453, end:  2026, label: "Modern Greece & Balkans" },
   ],
   "china": [
     { start: -2100, end: -1600, label: "Xia Dynasty" },
@@ -73,6 +77,8 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  1271, end:  1368, label: "Yuan Dynasty" },
     { start:  1368, end:  1644, label: "Ming Dynasty" },
     { start:  1644, end:  1912, label: "Qing Dynasty" },
+    { start:  1912, end:  1949, label: "Republic of China" },
+    { start:  1949, end:  2026, label: "People's Republic" },
   ],
   "india": [
     { start: -3300, end: -1300, label: "Indus Valley" },
@@ -84,6 +90,8 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:   550, end:  1206, label: "Regional Kingdoms" },
     { start:  1206, end:  1526, label: "Delhi Sultanate" },
     { start:  1526, end:  1857, label: "Mughal Empire" },
+    { start:  1857, end:  1947, label: "British Raj" },
+    { start:  1947, end:  2026, label: "Independent India" },
   ],
   "japan": [
     { start: -3000, end:  -300, label: "Jōmon Period" },
@@ -96,6 +104,11 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  1336, end:  1573, label: "Muromachi Period" },
     { start:  1573, end:  1615, label: "Azuchi-Momoyama" },
     { start:  1615, end:  1868, label: "Edo Period" },
+    { start:  1868, end:  1912, label: "Meiji Period" },
+    { start:  1912, end:  1926, label: "Taishō Period" },
+    { start:  1926, end:  1989, label: "Shōwa Period" },
+    { start:  1989, end:  2019, label: "Heisei Period" },
+    { start:  2019, end:  2026, label: "Reiwa Period" },
   ],
   "islamic": [
     { start:   622, end:   661, label: "Rashidun Caliphate" },
@@ -105,6 +118,8 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  1258, end:  1517, label: "Mamluk Sultanate" },
     { start:  1299, end:  1922, label: "Ottoman Empire" },
     { start:  1501, end:  1736, label: "Safavid Dynasty" },
+    { start:  1736, end:  1900, label: "Qajar & Late Empires" },
+    { start:  1900, end:  2026, label: "Modern Islamic World" },
   ],
   "europe": [
     { start: -3000, end:  -500, label: "Pre-Roman" },
@@ -116,6 +131,9 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:  1600, end:  1750, label: "Baroque" },
     { start:  1750, end:  1850, label: "Neoclassical" },
     { start:  1850, end:  1900, label: "Impressionist Era" },
+    { start:  1900, end:  1945, label: "Modernism" },
+    { start:  1945, end:  1980, label: "Post-War / Abstract" },
+    { start:  1980, end:  2026, label: "Contemporary" },
   ],
   "korea": [
     { start: -3000, end:  -57,  label: "Prehistoric" },
@@ -123,6 +141,8 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:   668, end:   918, label: "Unified Silla" },
     { start:   918, end:  1392, label: "Goryeo Dynasty", context: "The Goryeo court gave the world some of its most refined ceramics ever made. Goryeo celadons — with their distinctive jade-green glaze and inlaid slip decoration (sanggam) — were so prized that Chinese connoisseurs ranked them among the finest in the world. The dynasty was deeply Buddhist, and this shaped its arts: illustrated sutras, reliquaries, and ritual objects were produced to an extraordinary level of refinement." },
     { start:  1392, end:  1897, label: "Joseon Dynasty", context: "The Joseon dynasty's embrace of Neo-Confucianism brought a deliberate turn away from Buddhist luxury arts toward simplicity and scholarly values. White porcelain — pure, unadorned, morally virtuous — became the prestige ware. Joseon painters developed a distinctively Korean ink painting tradition, and the late Joseon period saw a flourishing of genre scenes depicting ordinary Korean life with warmth and humor." },
+    { start:  1897, end:  1945, label: "Korean Empire / Colonial" },
+    { start:  1945, end:  2026, label: "Modern Korea" },
   ],
   "southeast-asia": [
     { start: -3000, end:   100, label: "Prehistoric / Austronesian" },
@@ -130,19 +150,22 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:   550, end:   802, label: "Post-Funan Kingdoms" },
     { start:   802, end:  1432, label: "Khmer Empire", context: "The Khmer Empire built Angkor — one of the largest pre-industrial cities on earth — and filled it with stone temples whose sculptural programs rank among humanity's greatest artistic achievements. Khmer sculpture of the Angkor period is known for its serene power: figures with closed eyes and slight smiles that convey both divine authority and inner calm. The empire's wealth came from rice and trade, and its art synthesized Indian religious iconography with distinctly Southeast Asian sensibilities." },
     { start:  1432, end:  1800, label: "Post-Angkor / Regional Kingdoms" },
-    { start:  1800, end:  1900, label: "Colonial Era" },
+    { start:  1800, end:  1945, label: "Colonial Era" },
+    { start:  1945, end:  2026, label: "Independence & Contemporary" },
   ],
   "africa": [
     { start: -3000, end:  -500, label: "Iron Age / Early Kingdoms" },
     { start:  -500, end:   800, label: "Nok & Iron Age Cultures", context: "The Nok culture of central Nigeria (c. 500 BCE–200 CE) produced the earliest known sub-Saharan sculptural tradition: remarkable terracotta heads with pierced eyes and elaborate hairstyles. These works — some life-sized — hint at a sophisticated society about which we know almost nothing. They mark the beginning of a rich and varied sculptural tradition that would continue for millennia across West and Central Africa." },
     { start:   800, end:  1400, label: "Medieval Kingdoms", context: "This period saw the rise of great West African empires — Ghana, Mali, and Songhai — that controlled trans-Saharan gold and salt trade. Mali at its height was one of the wealthiest states in the world; Mansa Musa's 1324 pilgrimage to Mecca, during which he spent so much gold that he depressed its price across the Mediterranean for a decade, shocked the Islamic world. Court arts — bronze casting, gold jewelry, woven textiles — reflected this extraordinary wealth." },
     { start:  1400, end:  1800, label: "Early Modern Kingdoms", context: "The kingdom of Benin (in present-day Nigeria) produced some of Africa's most celebrated art: brass plaques and portrait heads cast using the lost-wax process, commemorating kings (obas) and court officials with remarkable psychological presence. Benin artists worked exclusively for the royal court, and their output documents centuries of political history. Across the continent, the Kongo kingdom, Great Zimbabwe, and the Swahili Coast city-states each developed sophisticated visual cultures tied to trade, ancestor veneration, and royal power." },
-    { start:  1800, end:  1900, label: "19th Century" },
+    { start:  1800, end:  1960, label: "Colonial Period" },
+    { start:  1960, end:  2026, label: "Independence & Contemporary" },
   ],
   "oceania": [
     { start: -3000, end:  1500, label: "Traditional / Pre-Contact" },
     { start:  1500, end:  1800, label: "Contact Period" },
     { start:  1800, end:  1900, label: "19th Century" },
+    { start:  1900, end:  2026, label: "Modern & Contemporary" },
   ],
   "americas": [
     { start: -3000, end: -1200, label: "Archaic Period" },
@@ -151,6 +174,7 @@ const CIV_ERAS: Record<string, EraRange[]> = {
     { start:   200, end:   900, label: "Classic Period", context: "The Classic period saw Mesoamerica's greatest civilizations flourish simultaneously: Teotihuacan dominated central Mexico with a grid-planned city of 100,000+ people; the Maya built ceremonial centers across the Yucatán and Guatemala, developing the only fully writing system in the pre-Columbian Americas; and in the Andes, the Moche produced the finest ceramic portrait vessels and gold metalwork in South American history. These cultures never met directly, yet developed remarkably sophisticated art traditions in parallel." },
     { start:   900, end:  1521, label: "Post-Classic", context: "After the collapse of Classic period centers, new powers rose. The Aztec (Mexica) built Tenochtitlan — an island city of 200,000 people in Lake Texcoco — and created an art of imperial grandeur: massive stone sculptures of gods and cosmic forces, turquoise mosaic masks, and featherwork of breathtaking delicacy. In the Andes, the Inca built the largest empire in pre-Columbian history, knitting it together with roads, relay runners, and an administrative system encoded not in writing but in knotted strings called quipu." },
     { start:  1521, end:  1900, label: "Colonial & Early Modern" },
+    { start:  1900, end:  2026, label: "Modern & Contemporary" },
   ],
 };
 
@@ -161,7 +185,7 @@ function getCivEra(civId: string, year: number): string | null {
   return era?.label ?? null;
 }
 
-const TICK_YEARS = [-3000, -2500, -2000, -1500, -1000, -500, 0, 500, 1000, 1500];
+const TICK_YEARS = [-3000, -2000, -1000, 0, 500, 1000, 1500, 2000];
 
 const WINDOW_PRESETS = [
   { label: "±50 yr",  value: 50  },
