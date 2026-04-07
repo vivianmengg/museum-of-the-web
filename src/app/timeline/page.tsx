@@ -27,8 +27,13 @@ export const CIVILIZATIONS: Civilization[] = [
   { id: "china",       label: "East Asia — China",     color: "#4A7C59", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Chinese", "China"] },
   { id: "india",       label: "South Asia",            color: "#B5621E", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Indian", "India", "South Asian"] },
   { id: "japan",       label: "East Asia — Japan",     color: "#6B4E8A", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Japanese", "Japan"] },
-  { id: "islamic",     label: "Islamic World",         color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
-  { id: "europe",      label: "Europe",                color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
+  { id: "korea",          label: "East Asia — Korea",  color: "#9E5252", dept: 6,  deptMatch: ["Asian"],            cultureMatch: ["Korean", "Korea"] },
+  { id: "southeast-asia", label: "Southeast Asia",      color: "#8B7B30", dept: 6,  deptMatch: ["Asian"],            cultureMatch: ["Thai", "Thailand", "Cambodian", "Cambodia", "Khmer", "Vietnamese", "Vietnam", "Burmese", "Myanmar", "Indonesian", "Indonesia", "Southeast Asian", "Javanese", "Mon", "Cham", "Siamese"] },
+  { id: "islamic",        label: "Islamic World",       color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
+  { id: "europe",         label: "Europe",              color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
+  { id: "africa",         label: "Africa",              color: "#7A3E2A", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Yoruba", "Fon", "Benin", "Ife", "Igbo", "Akan", "Asante", "Ashanti", "Bamana", "Dogon", "Fang", "Kongo", "Luba", "Kuba", "Pende", "Chokwe", "Senufo", "Baule", "Dan", "Mangbetu", "Zande", "Swahili", "Amhara", "Ethiopian", "African", "Malian", "Ghanaian", "Nigerian"] },
+  { id: "oceania",        label: "Oceania",             color: "#2E7B6B", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Hawaiian", "Maori", "Fijian", "Tongan", "Samoan", "Papua", "Melanesian", "Polynesian", "Micronesian", "Oceanian", "Papuan"] },
+  { id: "americas",       label: "The Americas",        color: "#8B3A2A", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Maya", "Mayan", "Aztec", "Inca", "Olmec", "Mixtec", "Zapotec", "Moche", "Chimú", "Chimu", "Tiwanaku", "Wari", "Nazca", "Teotihuacan", "Mississippian", "Hohokam", "Pueblo", "Native American", "Mexican", "Peruvian", "Colombian", "Costa Rican", "Panamanian"] },
 ];
 
 export type TimelineObject = MuseumObject & { civId: string; year: number };

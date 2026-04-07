@@ -23,6 +23,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
   const local = useLocalExhibits();
   const [signedIn, setSignedIn] = useState(false);
   const [cloudExhibits, setCloudExhibits] = useState<CloudExhibit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newTitle, setNewTitle] = useState("");
   const [creating, setCreating] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -32,16 +33,24 @@ export default function ExhibitPicker({ object, onClose }: Props) {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) { setSignedIn(true); loadCloudExhibits(); }
+      if (data.user) {
+        setSignedIn(true);
+        loadCloudExhibits().finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCloudExhibits = useCallback(async () => {
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
     const { data: exhibits } = await supabase
       .from("exhibits")
       .select("id, title, exhibit_objects(object_id, position)")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!exhibits) return;
@@ -162,7 +171,10 @@ export default function ExhibitPicker({ object, onClose }: Props) {
         <p className="text-[10px] uppercase tracking-widest text-[var(--muted)]">Add to exhibit</p>
       </div>
 
-      {isEmpty && !creating && (
+      {loading && (
+        <div className="px-3 py-3 text-xs text-[var(--muted)] animate-pulse">Loading…</div>
+      )}
+      {!loading && isEmpty && !creating && (
         <div className="px-3 py-3 text-xs text-[var(--muted)]">No exhibits yet.</div>
       )}
 

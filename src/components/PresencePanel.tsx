@@ -75,6 +75,11 @@ export default function PresencePanel({
     let anonId = sessionStorage.getItem("motw_anon_id") ?? "";
     const sender = currentUserId ?? anonId;
 
+    // Supabase broadcast doesn't echo back to the sender, so add our own message locally
+    const id = crypto.randomUUID();
+    setMessages((prev) => [...prev.slice(-49), { id, text, mine: true }]);
+    setTimeout(() => removeMessage(id), 5 * 60 * 1000);
+
     channelRef.current.send({
       type: "broadcast",
       event: "whisper",
