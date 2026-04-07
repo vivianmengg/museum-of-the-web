@@ -117,26 +117,23 @@ export default function Nav() {
   return (
     <>
       {/* ── Desktop nav (hidden on mobile) ───────────────────────────────── */}
-      <nav className="hidden sm:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-4 py-3 pointer-events-none">
+      <nav className="hidden sm:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-sm border-b border-[var(--border)]">
         {/* Left */}
-        <div className="pointer-events-auto flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full px-2 py-1.5 shadow-sm">
+        <div className="flex items-center gap-1">
           <BrowseDropdown pathname={pathname} />
           <Link href="/explore" className={navClass("/explore")}>Explore</Link>
           <Link href="/exhibits" className={navClass("/exhibits")}>My collection</Link>
         </div>
 
         {/* Center: search */}
-        <div className="pointer-events-auto absolute left-1/2 -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2">
           <Suspense><SearchBar /></Suspense>
         </div>
 
         {/* Right */}
-        <div className="pointer-events-auto flex items-center gap-2">
-          <Link href="/exhibit/new" className="text-sm px-4 py-1.5 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full shadow-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
-            + Exhibit
-          </Link>
+        <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full px-3 py-1.5 shadow-sm">
+            <div className="flex items-center gap-2">
               <Link href={`/profile/${user.id}`} className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors max-w-[100px] truncate">
                 {user.email?.split("@")[0]}
               </Link>
@@ -146,7 +143,7 @@ export default function Nav() {
               </button>
             </div>
           ) : (
-            <Link href="/auth" className="text-sm px-4 py-1.5 bg-white/90 backdrop-blur-sm border border-[var(--border)] rounded-full shadow-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+            <Link href="/auth" className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
               Sign in
             </Link>
           )}

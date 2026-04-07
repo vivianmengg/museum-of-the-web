@@ -9,7 +9,7 @@ interface Props {
   civilizations: Civilization[];
 }
 
-const START = -3000;
+const START = -7000;
 const END   = 2026;
 const RANGE = END - START;
 
@@ -185,7 +185,7 @@ function getCivEra(civId: string, year: number): string | null {
   return era?.label ?? null;
 }
 
-const TICK_YEARS = [-3000, -2000, -1000, 0, 500, 1000, 1500, 2000];
+const TICK_YEARS = [-7000, -5000, -3000, -1000, 0, 500, 1000, 1500, 2000];
 
 const WINDOW_PRESETS = [
   { label: "±50 yr",  value: 50  },
@@ -329,13 +329,19 @@ export default function TimelineView({ objects, civilizations }: Props) {
 
           {/* Tick labels */}
           <div className="relative h-5 mt-1">
-            {TICK_YEARS.map((y) => {
+            {TICK_YEARS.map((y, i) => {
               const pct = ((y - START) / RANGE) * 100;
+              const isFirst = i === 0;
+              const isLast = i === TICK_YEARS.length - 1;
               return (
                 <span
                   key={y}
-                  className="absolute text-[9px] text-[var(--muted)] -translate-x-1/2 whitespace-nowrap"
-                  style={{ left: `${pct}%` }}
+                  className="absolute text-[9px] text-[var(--muted)] whitespace-nowrap"
+                  style={{
+                    left: isFirst ? 0 : isLast ? "auto" : `${pct}%`,
+                    right: isLast ? 0 : "auto",
+                    transform: (!isFirst && !isLast) ? "translateX(-50%)" : "none",
+                  }}
                 >
                   {formatYear(y)}
                 </span>

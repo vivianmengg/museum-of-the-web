@@ -39,6 +39,7 @@ export type TimelineObject = MuseumObject & { civId: string; year: number };
 const CACHE_SUFFICIENT = 20;
 
 const TIME_BUCKETS = [
+  { from: -7000, to: -3000 },
   { from: -3000, to: -1500 },
   { from: -1500, to:  -300 },
   { from:  -300, to:   500 },
@@ -148,7 +149,7 @@ export default async function TimelinePage() {
     .not("thumbnail_url", "is", null)
     .not("year_begin", "is", null)
     .neq("institution", "harvard")
-    .gte("year_begin", -3000)
+    .gte("year_begin", -7000)
     .lte("year_begin",  2026)
     .order("year_begin")
     .limit(15000);
@@ -159,7 +160,7 @@ export default async function TimelinePage() {
     .not("thumbnail_url", "is", null)
     .not("year_begin", "is", null)
     .eq("institution", "harvard")
-    .gte("year_begin", -6000)
+    .gte("year_begin", -7000)
     .lte("year_begin", -1500)
     .order("year_begin")
     .limit(500);
@@ -187,11 +188,18 @@ export default async function TimelinePage() {
       let year: number | null;
       if (yb !== null) {
         const span = (ye ?? yb) - yb;
-        year = span > 400 ? (ye ?? yb) : Math.round((yb + (ye ?? yb)) / 2);
+        // Ancient objects (pre-3000 BCE): use year_begin so they appear at the
+        // early end of the timeline. Later objects: use year_end for wide spans
+        // (avoids BCE-CE crossers landing in wrong era), midpoint for narrow.
+        if (yb < -3000) {
+          year = yb;
+        } else {
+          year = span > 400 ? (ye ?? yb) : Math.round((yb + (ye ?? yb)) / 2);
+        }
       } else {
         year = parseDateToYear(obj.date);
       }
-      if (year !== null && year >= -3000 && year <= 1900) {
+      if (year !== null && year >= -7000 && year <= 1900) {
         timelineObjects.push({ ...obj, civId: civ.id, year });
         civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
       }
@@ -236,7 +244,7 @@ export default async function TimelinePage() {
       if (!result) continue;
       const { obj } = result;
       const year = parseDateToYear(obj.date);
-      if (year === null || year < -3000 || year > 1900) continue;
+      if (year === null || year < -7000 || year > 1900) continue;
 
       const fakeRow = { department: obj.department, culture: obj.culture };
       let civId = result.civ.id;
