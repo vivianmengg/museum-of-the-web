@@ -1,5 +1,5 @@
 import { fetchMetObject } from "@/lib/met";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
 
@@ -139,7 +139,7 @@ function sampleSpread(arr: number[], count: number): number[] {
 }
 
 export default async function TimelinePage() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data: seededRows } = await supabase
     .from("objects_cache")
