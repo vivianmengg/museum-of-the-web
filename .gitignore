@@ -44,4 +44,6 @@ next-env.d.ts
 .met-seed-progress.json
 .met-highlights-progress.json
 .aic-seed-progress.json
+.aic-highlights-progress.json
 .rijks-seed-progress.json
+.harvard-highlights-progress.json
