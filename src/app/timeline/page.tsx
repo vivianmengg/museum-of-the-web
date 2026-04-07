@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { fetchMetObject } from "@/lib/met";
 import { createClient } from "@/lib/supabase/server";
 import TimelineView from "./TimelineView";
@@ -14,9 +15,7 @@ export interface Civilization {
   dept: number;
   geo?: string;
   query?: string;
-  // Strings that must appear in the department field to match this civ from cache
   deptMatch: string[];
-  // Optional: culture field must contain one of these (for Asian Art sub-filtering)
   cultureMatch?: string[];
 }
 
@@ -38,10 +37,8 @@ export const CIVILIZATIONS: Civilization[] = [
 
 export type TimelineObject = MuseumObject & { civId: string; year: number };
 
-// How many cached objects per civ before we skip the API fallback
 const CACHE_SUFFICIENT = 20;
 
-// Per-bucket API fallback config
 const TIME_BUCKETS = [
   { from: -3000, to: -1500 },
   { from: -1500, to:  -300 },
@@ -79,7 +76,6 @@ export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boo
   const deptOk = civ.deptMatch.some((d) => dept.includes(d.toLowerCase()));
   if (!deptOk) return false;
 
-  // For Asian Art, narrow by culture to avoid mixing China/Japan/India
   if (civ.cultureMatch) {
     return civ.cultureMatch.some((c) => culture.includes(c.toLowerCase()));
   }
@@ -90,8 +86,8 @@ export function parseDateToYear(date: string): number | null {
   if (!date) return null;
   const s = date.toLowerCase()
     .replace(/\bca\.?\b|\bcirca\b|\bc\.\b/g, "")
-    .replace(/b\.c\.e?\./g, "bce")   // normalize B.C.E. / B.C. → bce
-    .replace(/a\.d\./g, "ce")         // normalize A.D. → ce
+    .replace(/b\.c\.e?\./g, "bce")
+    .replace(/a\.d\./g, "ce")
     .trim();
 
   const bceRange = s.match(/(\d+)\s*[–\-]\s*(\d+)\s*bc[e]?/);
@@ -143,11 +139,50 @@ function sampleSpread(arr: number[], count: number): number[] {
   return Array.from({ length: count }, (_, i) => arr[Math.floor(i * step)]);
 }
 
-export default async function TimelinePage() {
-  // ── 1. Pull from cache — prefer rows seeded from the CSV (have year_begin) ──
+// ── Skeleton shown instantly while data loads ─────────────────────────────────
+function TimelineSkeleton() {
+  return (
+    <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]">
+      {/* Header */}
+      <div className="px-3 sm:px-6 pt-4 pb-3 border-b border-[var(--border)] shrink-0">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <h1 className="font-serif text-lg sm:text-xl text-[var(--foreground)]">Art Through the Ages</h1>
+            <p className="text-xs text-[var(--muted)] mt-0.5 animate-pulse">Loading collection…</p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {["±50 yr", "±200 yr", "±500 yr"].map((l) => (
+              <div key={l} className="text-xs px-2 sm:px-2.5 py-1 rounded-full border border-[var(--border)] text-[var(--muted)] opacity-50">{l}</div>
+            ))}
+          </div>
+        </div>
+        {/* Scrubber placeholder */}
+        <div className="relative pt-1 pb-5">
+          <div className="h-10 rounded bg-[var(--border)]/40 animate-pulse" />
+          <div className="relative h-5 mt-1" />
+        </div>
+      </div>
+      {/* Content placeholder */}
+      <div className="flex-1 overflow-hidden px-3 sm:px-6 py-4 space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i}>
+            <div className="h-4 w-40 rounded bg-[var(--border)]/60 animate-pulse mb-3" />
+            <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
+              {Array.from({ length: 6 }).map((_, j) => (
+                <div key={j} className="aspect-square rounded-md bg-[var(--border)]/40 animate-pulse" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Heavy data-fetch (runs async, streams in after skeleton) ──────────────────
+async function TimelineContent() {
   const supabase = await createClient();
 
-  // First: all objects with clean numeric years (seeded by seed-met-timeline.mjs)
   const { data: seededRows } = await supabase
     .from("objects_cache")
     .select("*")
@@ -159,7 +194,6 @@ export default async function TimelinePage() {
     .order("year_begin")
     .limit(15000);
 
-  // Also pull any other cached objects that have a date string (browsed naturally)
   const { data: browseRows } = await supabase
     .from("objects_cache")
     .select("*")
@@ -169,11 +203,8 @@ export default async function TimelinePage() {
     .neq("date", "")
     .limit(2000);
 
-  const cachedRows = [...(seededRows ?? []), ...(browseRows ?? [])];
+  const rows = [...(seededRows ?? []), ...(browseRows ?? [])] as Record<string, unknown>[];
 
-const rows = (cachedRows ?? []) as Record<string, unknown>[];
-
-  // ── 2. Map cached rows → civilization buckets ────────────────────────────────
   const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));
   const timelineObjects: TimelineObject[] = [];
 
@@ -181,9 +212,6 @@ const rows = (cachedRows ?? []) as Record<string, unknown>[];
     for (const civ of CIVILIZATIONS) {
       if (!matchesCiv(row, civ)) continue;
       const obj = rowToMuseumObject(row);
-      // Prefer the clean numeric years from the CSV seed; fall back to text parsing.
-      // For tight ranges (≤400 yrs) use midpoint; for wide ranges prefer year_end
-      // (a "500 BCE–750 CE" object is almost always from the later end of that span).
       const yb = row.year_begin as number | null;
       const ye = row.year_end   as number | null;
       let year: number | null;
@@ -197,14 +225,11 @@ const rows = (cachedRows ?? []) as Record<string, unknown>[];
         timelineObjects.push({ ...obj, civId: civ.id, year });
         civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
       }
-      break; // assign to first matching civ only
+      break;
     }
   }
 
-  // ── 3. For civs below threshold, fill gaps from the Met API ─────────────────
-  const sparseCivs = CIVILIZATIONS.filter(
-    (c) => (civCounts.get(c.id) ?? 0) < CACHE_SUFFICIENT
-  );
+  const sparseCivs = CIVILIZATIONS.filter((c) => (civCounts.get(c.id) ?? 0) < CACHE_SUFFICIENT);
 
   if (sparseCivs.length > 0) {
     const existingIds = new Set(timelineObjects.map((o) => o.id));
@@ -243,15 +268,10 @@ const rows = (cachedRows ?? []) as Record<string, unknown>[];
       const year = parseDateToYear(obj.date);
       if (year === null || year < -3000 || year > 1900) continue;
 
-      // Re-verify civ from the object's actual culture — the bucket search can return
-      // cross-civ objects (e.g. Chinese pieces via a Japan geo query).
       const fakeRow = { department: obj.department, culture: obj.culture };
       let civId = result.civ.id;
       for (const civ of CIVILIZATIONS) {
-        if (matchesCiv(fakeRow as Record<string, unknown>, civ)) {
-          civId = civ.id;
-          break;
-        }
+        if (matchesCiv(fakeRow as Record<string, unknown>, civ)) { civId = civ.id; break; }
       }
 
       timelineObjects.push({ ...obj, civId, year });
@@ -259,4 +279,13 @@ const rows = (cachedRows ?? []) as Record<string, unknown>[];
   }
 
   return <TimelineView objects={timelineObjects} civilizations={CIVILIZATIONS} />;
+}
+
+// ── Page: renders skeleton immediately, streams full timeline in ──────────────
+export default function TimelinePage() {
+  return (
+    <Suspense fallback={<TimelineSkeleton />}>
+      <TimelineContent />
+    </Suspense>
+  );
 }
