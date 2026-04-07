@@ -25,8 +25,9 @@ function persist(exhibits: LocalExhibit[]) {
 
 export function useLocalExhibits() {
   const [exhibits, setExhibits] = useState<LocalExhibit[]>([]);
+  const [ready, setReady] = useState(false);
 
-  useEffect(() => { setExhibits(load()); }, []);
+  useEffect(() => { setExhibits(load()); setReady(true); }, []);
 
   const save = useCallback((draft: Omit<LocalExhibit, "id" | "savedAt">) => {
     const entry: LocalExhibit = { ...draft, id: crypto.randomUUID(), savedAt: new Date().toISOString() };
@@ -89,5 +90,5 @@ export function useLocalExhibits() {
     return exhibits.filter((e) => e.objects.some((o) => o.object.id === objectId));
   }, [exhibits]);
 
-  return { exhibits, save, update, remove, addObject, removeObject, createWithObject, hasObject, objectExhibits };
+  return { exhibits, ready, save, update, remove, addObject, removeObject, createWithObject, hasObject, objectExhibits };
 }

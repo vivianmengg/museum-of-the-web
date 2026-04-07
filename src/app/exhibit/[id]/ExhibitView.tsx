@@ -7,16 +7,14 @@ import { useLocalExhibits, type LocalExhibit } from "@/lib/useLocalExhibits";
 import ExhibitContent from "@/components/ExhibitContent";
 
 export default function ExhibitView({ id }: { id: string }) {
-  const { exhibits, remove } = useLocalExhibits();
+  const { exhibits, ready, remove } = useLocalExhibits();
   const [exhibit, setExhibit] = useState<LocalExhibit | null | "loading">("loading");
 
   useEffect(() => {
-    if (exhibits.length > 0 || exhibit !== "loading") {
-      setExhibit(exhibits.find((e) => e.id === id) ?? null);
-    }
-  }, [exhibits, id, exhibit]);
+    if (ready) setExhibit(exhibits.find((e) => e.id === id) ?? null);
+  }, [ready, exhibits, id]);
 
-  if (exhibit === "loading") return <div className="min-h-screen" />;
+  if (!ready || exhibit === "loading") return <div className="min-h-screen" />;
 
   if (!exhibit) {
     return (

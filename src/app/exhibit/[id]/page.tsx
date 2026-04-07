@@ -42,6 +42,19 @@ export default async function ExhibitPage({
     .eq("id", id)
     .maybeSingle();
 
+  // Exhibit exists but viewer has no access
+  if (data && !data.is_public && user?.id !== data.user_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-center px-6">
+        <div>
+          <p className="text-[var(--muted)] mb-2">This exhibit is private.</p>
+          <a href="/auth" className="text-sm text-[var(--foreground)] underline underline-offset-2">Sign in</a>
+          <span className="text-[var(--muted)] text-sm"> to view your own exhibits.</span>
+        </div>
+      </div>
+    );
+  }
+
   // Show if public, or if the current user owns it
   if (data && (data.is_public || user?.id === data.user_id)) {
     const sorted = [...(data.exhibit_objects ?? [])].sort((a, b) => a.position - b.position);
