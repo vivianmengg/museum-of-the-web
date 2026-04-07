@@ -220,10 +220,22 @@ export default async function TimelinePage() {
 
     for (const result of fetched) {
       if (!result) continue;
-      const year = parseDateToYear(result.obj.date);
-      if (year !== null && year >= -3000 && year <= 1900) {
-        timelineObjects.push({ ...result.obj, civId: result.civ.id, year });
+      const { obj } = result;
+      const year = parseDateToYear(obj.date);
+      if (year === null || year < -3000 || year > 1900) continue;
+
+      // Re-verify civ from the object's actual culture — the bucket search can return
+      // cross-civ objects (e.g. Chinese pieces via a Japan geo query).
+      const fakeRow = { department: obj.department, culture: obj.culture };
+      let civId = result.civ.id;
+      for (const civ of CIVILIZATIONS) {
+        if (matchesCiv(fakeRow as Record<string, unknown>, civ)) {
+          civId = civ.id;
+          break;
+        }
       }
+
+      timelineObjects.push({ ...obj, civId, year });
     }
   }
 
