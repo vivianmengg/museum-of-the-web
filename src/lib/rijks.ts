@@ -1,6 +1,6 @@
 import type { MuseumObject } from "@/types";
 import type { BrowseFilters } from "./constants";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 
 const RIJKS_BASE = "https://www.rijksmuseum.nl/api/en/collection";
 export const RIJKS_PAGE_SIZE = 10;
@@ -93,7 +93,7 @@ export async function fetchRijksPage(
     const cacheIds = artObjects.map((a) => `rijks-${a.objectNumber}`);
     let cachedMap = new Map<string, Record<string, unknown>>();
     try {
-      const supabase = await createClient();
+      const supabase = createStaticClient();
       const { data: rows } = await supabase
         .from("objects_cache")
         .select("*")
@@ -133,7 +133,7 @@ export async function fetchRijksPage(
         };
 
         // Cache non-blocking
-        createClient().then((supabase) =>
+        Promise.resolve(createStaticClient()).then((supabase) =>
           supabase.from("objects_cache").upsert({
             id: object.id, institution: object.institution, title: object.title,
             date: object.date, culture: object.culture, medium: object.medium,

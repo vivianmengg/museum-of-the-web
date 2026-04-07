@@ -1,6 +1,6 @@
 import type { MuseumObject } from "@/types";
 import type { BrowseFilters } from "./constants";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 
 export const MOMA_PAGE_SIZE = 5;
 
@@ -42,7 +42,7 @@ export async function fetchMomaPage(
 ): Promise<{ objects: MuseumObject[]; total: number }> {
   if (filters.publicDomain) return { objects: [], total: 0 };
   try {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
 
     // For search queries, paginate normally
     if (filters.q) {

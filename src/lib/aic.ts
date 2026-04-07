@@ -1,6 +1,6 @@
 import type { MuseumObject } from "@/types";
 import type { BrowseFilters } from "./constants";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/static";
 
 const AIC_BASE = "https://api.artic.edu/api/v1";
 const AIC_FIELDS = "id,title,date_display,place_of_origin,medium_display,department_title,artist_display,credit_line,dimensions,image_id";
@@ -135,7 +135,7 @@ export async function fetchAicPage(
     const cacheIds = hits.map((h) => `aic-${h.id}`);
     let cachedMap = new Map<string, Record<string, unknown>>();
     try {
-      const supabase = await createClient();
+      const supabase = createStaticClient();
       const { data: rows } = await supabase
         .from("objects_cache")
         .select("*")
@@ -174,7 +174,7 @@ export async function fetchAicPage(
           };
 
           // Cache non-blocking
-          createClient().then((supabase) =>
+          Promise.resolve(createStaticClient()).then((supabase) =>
             supabase.from("objects_cache").upsert({
               id: object.id, institution: object.institution, title: object.title,
               date: object.date, culture: object.culture, medium: object.medium,
