@@ -241,24 +241,24 @@ export default function TimelineView({ objects, civilizations }: Props) {
   const thumbPct = ((year - START) / RANGE) * 100;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+    <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]">
       {/* ── Header ── */}
-      <div className="px-6 pt-5 pb-4 border-b border-[var(--border)] shrink-0">
-        <div className="flex items-baseline justify-between mb-4">
+      <div className="px-3 sm:px-6 pt-4 pb-3 border-b border-[var(--border)] shrink-0">
+        <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <h1 className="font-serif text-xl text-[var(--foreground)]">Art Through the Ages</h1>
+            <h1 className="font-serif text-lg sm:text-xl text-[var(--foreground)]">Art Through the Ages</h1>
             <p className="text-xs text-[var(--muted)] mt-0.5">
               {visible.length} objects · {formatYear(year - window_)} – {formatYear(year + window_)}
             </p>
           </div>
 
           {/* Window presets */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {WINDOW_PRESETS.map((p) => (
               <button
                 key={p.value}
                 onClick={() => setWindow(p.value)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                className={`text-xs px-2 sm:px-2.5 py-1 rounded-full border transition-colors ${
                   window_ === p.value
                     ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
                     : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -347,7 +347,7 @@ export default function TimelineView({ objects, civilizations }: Props) {
       </div>
 
       {/* ── Civilization sections ── */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-8">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-5 space-y-6 sm:space-y-8">
         {civilizations.map((civ) => {
           const civObjects = visible.filter((o) => o.civId === civ.id);
           if (civObjects.length === 0) return null;
@@ -388,7 +388,7 @@ export default function TimelineView({ objects, civilizations }: Props) {
               </div>
 
               {/* Objects row */}
-              <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+              <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
                 {civObjects.map((obj) => (
                   <Link
                     key={obj.id}
