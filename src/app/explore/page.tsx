@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { fetchMetObject } from "@/lib/met";
 import ExploreShell from "./ExploreShell";
 import type { MuseumObject } from "@/types";
 
@@ -26,31 +25,34 @@ export default async function ExplorePage() {
     .order("created_at", { ascending: false })
     .limit(40);
 
-  const exhibits: PublicExhibit[] = await Promise.all(
-    (exhibitRows ?? []).map(async (e) => {
-      const sorted = [...(e.exhibit_objects ?? [])].sort((a, b) => a.position - b.position);
-      // Fetch first 4 objects for preview thumbnails
-      const previews = await Promise.all(
-        sorted.slice(0, 4).map(async (eo) => {
-          if (eo.institution === "met") {
-            const numericId = parseInt(eo.object_id.replace("met-", ""), 10);
-            const obj = await fetchMetObject(numericId);
-            return { thumbnailUrl: obj?.thumbnailUrl ?? null, title: obj?.title ?? "" };
-          }
-          return { thumbnailUrl: null, title: "" };
-        })
-      );
-      return {
-        id: e.id,
-        title: e.title,
-        statement: e.statement ?? null,
-        created_at: e.created_at,
-        object_count: e.exhibit_objects?.length ?? 0,
-        curator: (Array.isArray(e.users) ? e.users[0] : e.users as { username: string } | null)?.username ?? "anonymous",
-        previews,
-      };
-    })
+  // Collect all preview object IDs across all exhibits
+  const previewIds = (exhibitRows ?? []).flatMap((e) =>
+    [...(e.exhibit_objects ?? [])]
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 4)
+      .map((eo) => eo.object_id)
   );
+  const { data: previewRows } = previewIds.length
+    ? await supabase.from("objects_cache").select("id, thumbnail_url, title").in("id", [...new Set(previewIds)])
+    : { data: [] };
+  const previewMap = new Map((previewRows ?? []).map((r) => [r.id, r]));
+
+  const exhibits: PublicExhibit[] = (exhibitRows ?? []).map((e) => {
+    const sorted = [...(e.exhibit_objects ?? [])].sort((a, b) => a.position - b.position);
+    const previews = sorted.slice(0, 4).map((eo) => {
+      const cached = previewMap.get(eo.object_id);
+      return { thumbnailUrl: cached?.thumbnail_url ?? null, title: cached?.title ?? "" };
+    });
+    return {
+      id: e.id,
+      title: e.title,
+      statement: e.statement ?? null,
+      created_at: e.created_at,
+      object_count: e.exhibit_objects?.length ?? 0,
+      curator: (Array.isArray(e.users) ? e.users[0] : e.users as { username: string } | null)?.username ?? "anonymous",
+      previews,
+    };
+  });
 
   // ── Artifacts ─────────────────────────────────────────────────────────────
   // Two signals merged: recently traced objects + objects in recently published exhibits
@@ -96,16 +98,33 @@ export default async function ExplorePage() {
     .sort((a, b) => b.last_seen.localeCompare(a.last_seen))
     .slice(0, 32);
 
-  const artifactResults = await Promise.all(
-    sorted.map(async (r) => {
-      if (r.institution === "met") {
-        const numericId = parseInt(r.object_id.replace("met-", ""), 10);
-        return fetchMetObject(numericId);
-      }
-      return null;
-    })
-  );
-  const artifacts: MuseumObject[] = artifactResults.filter((o): o is MuseumObject => o !== null);
+  const artifactIds = sorted.map((r) => r.object_id);
+  const { data: artifactRows } = artifactIds.length
+    ? await supabase.from("objects_cache").select("*").in("id", artifactIds)
+    : { data: [] };
+  const artifactCacheMap = new Map((artifactRows ?? []).map((r) => [r.id, r]));
+
+  const artifacts: MuseumObject[] = sorted.flatMap((r) => {
+    const row = artifactCacheMap.get(r.object_id);
+    if (!row) return [];
+    return [{
+      id:           row.id,
+      institution:  row.institution,
+      title:        row.title || "Untitled",
+      date:         row.date || "",
+      culture:      row.culture || "",
+      medium:       row.medium || "",
+      imageUrl:     row.image_url ?? null,
+      thumbnailUrl: row.thumbnail_url ?? null,
+      imageWidth:   row.image_width || 4,
+      imageHeight:  row.image_height || 3,
+      department:   row.department || "",
+      artistName:   row.artist_name || "",
+      creditLine:   row.credit_line || "",
+      dimensions:   row.dimensions || "",
+      objectUrl:    row.object_url ?? null,
+    }];
+  });
 
   return <ExploreShell exhibits={exhibits} artifacts={artifacts} />;
 }
