@@ -185,7 +185,17 @@ function getCivEra(civId: string, year: number): string | null {
   return era?.label ?? null;
 }
 
-const TICK_YEARS = [-7000, -5000, -3000, -1000, 0, 500, 1000, 1500, 2000];
+const TICK_YEARS: { year: number; mobileHide?: boolean }[] = [
+  { year: -7000 },
+  { year: -5000, mobileHide: true },
+  { year: -3000 },
+  { year: -1000, mobileHide: true },
+  { year: 0 },
+  { year: 500,  mobileHide: true },
+  { year: 1000, mobileHide: true },
+  { year: 1500 },
+  { year: 2000 },
+];
 
 const WINDOW_PRESETS = [
   { label: "±50 yr",  value: 50  },
@@ -329,14 +339,14 @@ export default function TimelineView({ objects, civilizations }: Props) {
 
           {/* Tick labels */}
           <div className="relative h-5 mt-1">
-            {TICK_YEARS.map((y, i) => {
+            {TICK_YEARS.map(({ year: y, mobileHide }, i) => {
               const pct = ((y - START) / RANGE) * 100;
               const isFirst = i === 0;
               const isLast = i === TICK_YEARS.length - 1;
               return (
                 <span
                   key={y}
-                  className="absolute text-[9px] text-[var(--muted)] whitespace-nowrap"
+                  className={`absolute text-[9px] text-[var(--muted)] whitespace-nowrap ${mobileHide ? "hidden sm:inline" : ""}`}
                   style={{
                     left: isFirst ? 0 : isLast ? "auto" : `${pct}%`,
                     right: isLast ? 0 : "auto",
