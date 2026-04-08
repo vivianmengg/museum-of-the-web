@@ -21,7 +21,6 @@ const SESSION_KEY = "browse-state";
 
 export default function BrowseGrid() {
   const searchParams = useSearchParams();
-  const paramsString = searchParams.toString();
   const initialFilters: BrowseFilters = {
     q:           searchParams.get("q")           ?? undefined,
     culture:     searchParams.get("culture")     ?? undefined,
@@ -49,7 +48,6 @@ export default function BrowseGrid() {
   const filtersRef = useRef<BrowseFilters>(initialFilters);
   const hasMoreRef = useRef(true);
   const [hasMore, setHasMore] = useState(true);
-  const prevParamsRef = useRef<string | null>(null);
 
   const zoom = usePinchZoom(gridRef);
   const breakpoints = zoomToBreakpoints(zoom);
@@ -63,55 +61,31 @@ export default function BrowseGrid() {
     supabase.auth.getUser().then(({ data }) => setIsSignedIn(!!data.user));
   }, []);
 
-  // Fetch when URL search params change (search submit, clear, or back navigation)
+  // On mount: restore from sessionStorage (back navigation) or fetch fresh
   useEffect(() => {
-    const isFirstMount = prevParamsRef.current === null;
-    prevParamsRef.current = paramsString;
-
-    const newFilters: BrowseFilters = {
-      q:            searchParams.get("q")           ?? undefined,
-      culture:      searchParams.get("culture")     ?? undefined,
-      medium:       searchParams.get("medium")      ?? undefined,
-      dateBegin:    searchParams.get("dateBegin")   ?? undefined,
-      dateEnd:      searchParams.get("dateEnd")     ?? undefined,
-      publicDomain: searchParams.get("publicDomain") === "true" ? true : undefined,
-    };
-    filtersRef.current = newFilters;
-
-    // On first mount only: try to restore scroll + objects from sessionStorage
-    if (isFirstMount) {
-      try {
-        const saved = sessionStorage.getItem(SESSION_KEY);
-        if (saved) {
-          const { objs, pg, tot, scrollY, filters: savedFilters } = JSON.parse(saved);
-          const filtersMatch = JSON.stringify(savedFilters ?? {}) === JSON.stringify(newFilters);
-          if (filtersMatch && Array.isArray(objs) && objs.length > 0) {
-            setObjects(objs);
-            setTotal(tot);
-            pageRef.current = pg;
-            setPage(pg);
-            hasMoreRef.current = objs.length < tot;
-            setHasMore(objs.length < tot);
-            setLoading(false);
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              window.scrollTo({ top: scrollY, behavior: "instant" });
-            }));
-            return;
-          }
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const { objs, pg, tot, scrollY, filters: savedFilters } = JSON.parse(saved);
+        const filtersMatch = JSON.stringify(savedFilters ?? {}) === JSON.stringify(initialFilters);
+        if (filtersMatch && Array.isArray(objs) && objs.length > 0) {
+          setObjects(objs);
+          setTotal(tot);
+          pageRef.current = pg;
+          setPage(pg);
+          hasMoreRef.current = objs.length < tot;
+          setHasMore(objs.length < tot);
+          setLoading(false);
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, behavior: "instant" });
+          }));
+          return;
         }
-      } catch { /* ignore */ }
-    }
-
-    // Fresh fetch with current filters
-    hasMoreRef.current = true;
-    setHasMore(true);
-    pageRef.current = 0;
-    setObjects([]);
-    setLoading(true);
-    sessionStorage.removeItem(SESSION_KEY);
-    fetchPage(0, newFilters, true);
+      }
+    } catch { /* ignore */ }
+    fetchPage(0, filtersRef.current, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsString]);
+  }, []);
 
   // Persist scroll position continuously (debounced)
   useEffect(() => {
