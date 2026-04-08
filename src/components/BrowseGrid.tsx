@@ -21,6 +21,7 @@ const SESSION_KEY = "browse-state";
 
 export default function BrowseGrid() {
   const searchParams = useSearchParams();
+  const paramsString = searchParams.toString();
   const initialFilters: BrowseFilters = {
     q:           searchParams.get("q")           ?? undefined,
     culture:     searchParams.get("culture")     ?? undefined,
@@ -64,9 +65,8 @@ export default function BrowseGrid() {
 
   // Fetch when URL search params change (search submit, clear, or back navigation)
   useEffect(() => {
-    const paramsStr = searchParams.toString();
     const isFirstMount = prevParamsRef.current === null;
-    prevParamsRef.current = paramsStr;
+    prevParamsRef.current = paramsString;
 
     const newFilters: BrowseFilters = {
       q:            searchParams.get("q")           ?? undefined,
@@ -111,7 +111,7 @@ export default function BrowseGrid() {
     sessionStorage.removeItem(SESSION_KEY);
     fetchPage(0, newFilters, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [paramsString]);
 
   // Persist scroll position continuously (debounced)
   useEffect(() => {
