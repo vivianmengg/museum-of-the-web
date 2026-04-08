@@ -21,7 +21,7 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: "Museum of the Web",
-  description: "A place where museum objects carry human memory.",
+  description: "9,000+ years of human creativity in one place.",
 };
 
 export default function RootLayout({

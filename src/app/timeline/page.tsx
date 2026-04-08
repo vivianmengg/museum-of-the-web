@@ -21,14 +21,14 @@ export interface Civilization {
 export const CIVILIZATIONS: Civilization[] = [
   { id: "egypt",       label: "Nile Valley",           color: "#B8960C", dept: 10, deptMatch: ["Egyptian"] },
   { id: "near-east",   label: "Ancient Near East",     color: "#8B4513", dept: 3,  deptMatch: ["Near Eastern"] },
-  { id: "greece-rome", label: "Eastern Mediterranean", color: "#6B4226", dept: 13, deptMatch: ["Greek", "Roman"] },
+  { id: "greece-rome", label: "Eastern Mediterranean", color: "#6B4226", dept: 13, deptMatch: ["Greek", "Roman", "Getty Villa"] },
   { id: "china",       label: "East Asia — China",     color: "#4A7C59", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Chinese", "China"] },
   { id: "india",       label: "South Asia",            color: "#B5621E", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Indian", "India", "South Asian"] },
   { id: "japan",       label: "East Asia — Japan",     color: "#6B4E8A", dept: 6,  deptMatch: ["Asian"], cultureMatch: ["Japanese", "Japan"] },
   { id: "korea",          label: "East Asia — Korea",  color: "#9E5252", dept: 6,  deptMatch: ["Asian"],            cultureMatch: ["Korean", "Korea"] },
   { id: "southeast-asia", label: "Southeast Asia",      color: "#8B7B30", dept: 6,  deptMatch: ["Asian"],            cultureMatch: ["Thai", "Thailand", "Cambodian", "Cambodia", "Khmer", "Vietnamese", "Vietnam", "Burmese", "Myanmar", "Indonesian", "Indonesia", "Southeast Asian", "Javanese", "Mon", "Cham", "Siamese"] },
   { id: "islamic",        label: "Islamic World",       color: "#1E6B7A", dept: 14, deptMatch: ["Islamic"] },
-  { id: "europe",         label: "Europe",              color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval"], query: "painting" },
+  { id: "europe",         label: "Europe",              color: "#4A5E7A", dept: 11, deptMatch: ["European", "Medieval", "Getty Center"], query: "painting" },
   { id: "africa",         label: "Africa",              color: "#7A3E2A", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Yoruba", "Fon", "Benin", "Ife", "Igbo", "Akan", "Asante", "Ashanti", "Bamana", "Dogon", "Fang", "Kongo", "Luba", "Kuba", "Pende", "Chokwe", "Senufo", "Baule", "Dan", "Mangbetu", "Zande", "Swahili", "Amhara", "Ethiopian", "African", "Malian", "Ghanaian", "Nigerian"] },
   { id: "oceania",        label: "Oceania",             color: "#2E7B6B", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Hawaiian", "Maori", "Fijian", "Tongan", "Samoan", "Papua", "Melanesian", "Polynesian", "Micronesian", "Oceanian", "Papuan"] },
   { id: "americas",       label: "The Americas",        color: "#8B3A2A", dept: 5,  deptMatch: ["Africa, Oceania"],  cultureMatch: ["Maya", "Mayan", "Aztec", "Inca", "Olmec", "Mixtec", "Zapotec", "Moche", "Chimú", "Chimu", "Tiwanaku", "Wari", "Nazca", "Teotihuacan", "Mississippian", "Hohokam", "Pueblo", "Native American", "Mexican", "Peruvian", "Colombian", "Costa Rican", "Panamanian"] },
@@ -199,7 +199,7 @@ export default async function TimelinePage() {
       } else {
         year = parseDateToYear(obj.date);
       }
-      if (year !== null && year >= -7000 && year <= 1900) {
+      if (year !== null && year >= -7000 && year <= 2026) {
         timelineObjects.push({ ...obj, civId: civ.id, year });
         civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
       }

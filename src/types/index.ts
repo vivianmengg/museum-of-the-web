@@ -2,7 +2,7 @@
 export type MuseumObject = {
   // Namespaced: "met-123456" or "aic-456789"
   id: string
-  institution: 'met' | 'aic' | 'rijks' | 'moma' | 'harvard' | 'cleveland' | 'smithsonian' | 'colbase'
+  institution: 'met' | 'aic' | 'rijks' | 'moma' | 'harvard' | 'cleveland' | 'smithsonian' | 'colbase' | 'getty'
   title: string
   date: string
   culture: string

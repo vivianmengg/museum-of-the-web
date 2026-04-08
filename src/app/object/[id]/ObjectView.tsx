@@ -14,6 +14,7 @@ const INSTITUTION_LABELS: Record<string, string> = {
   aic: "Art Institute of Chicago",
   rijks: "Rijksmuseum",
   moma: "Museum of Modern Art",
+  getty: "J. Paul Getty Museum",
 };
 
 export default function ObjectView({ object, currentUserId }: { object: MuseumObject; currentUserId: string | null }) {
@@ -115,7 +116,16 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
             </h1>
             {(object.artistName || object.date) && (
               <p className="text-[var(--muted)] text-base mb-8">
-                {[object.artistName, object.date].filter(Boolean).join(", ")}
+                {object.artistName ? (
+                  <Link
+                    href={`/artist/${encodeURIComponent(object.artistName)}`}
+                    className="hover:text-[var(--foreground)] transition-colors"
+                  >
+                    {object.artistName}
+                  </Link>
+                ) : null}
+                {object.artistName && object.date ? ", " : ""}
+                {object.date}
               </p>
             )}
 
