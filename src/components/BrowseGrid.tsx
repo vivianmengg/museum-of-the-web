@@ -18,6 +18,11 @@ function dedupeKey(title: string, artist: string) {
 }
 
 const SESSION_KEY = "browse-state";
+const HOME_SESSION_KEY = "browse-home-state"; // never overwritten by search
+
+function isHomeFilters(f: BrowseFilters) {
+  return !f.q && !f.culture && !f.medium && !f.dateBegin && !f.dateEnd;
+}
 
 export default function BrowseGrid() {
   const searchParams = useSearchParams();
@@ -61,11 +66,17 @@ export default function BrowseGrid() {
     supabase.auth.getUser().then(({ data }) => setIsSignedIn(!!data.user));
   }, []);
 
-  // On mount: restore from sessionStorage (back navigation) or fetch fresh
+  // On mount: restore from sessionStorage (back navigation / search clear) or fetch fresh
   useEffect(() => {
+    // When returning to the unfiltered home page, prefer the home-specific snapshot
+    // (never overwritten by search sessions) so scroll position survives a search + clear
+    const keys = isHomeFilters(initialFilters)
+      ? [HOME_SESSION_KEY, SESSION_KEY]
+      : [SESSION_KEY];
     try {
-      const saved = sessionStorage.getItem(SESSION_KEY);
-      if (saved) {
+      for (const key of keys) {
+        const saved = sessionStorage.getItem(key);
+        if (!saved) continue;
         const { objs, pg, tot, scrollY, filters: savedFilters } = JSON.parse(saved);
         const filtersMatch = JSON.stringify(savedFilters ?? {}) === JSON.stringify(initialFilters);
         if (filtersMatch && Array.isArray(objs) && objs.length > 0) {
@@ -94,8 +105,13 @@ export default function BrowseGrid() {
       clearTimeout(timer);
       timer = setTimeout(() => {
         try {
+          const patch = { scrollY: window.scrollY };
           const existing = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "{}");
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...existing, scrollY: window.scrollY }));
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...existing, ...patch }));
+          if (isHomeFilters(filtersRef.current)) {
+            const homeExisting = JSON.parse(sessionStorage.getItem(HOME_SESSION_KEY) || "{}");
+            sessionStorage.setItem(HOME_SESSION_KEY, JSON.stringify({ ...homeExisting, ...patch }));
+          }
         } catch { /* storage full */ }
       }, 150);
     }
@@ -159,13 +175,17 @@ export default function BrowseGrid() {
       setTotal(newTotal);
       pageRef.current = nextPage + 1;
       setPage(nextPage + 1);
-      // Persist for back-navigation restore
+      // Persist for back-navigation / search-clear restore
       setObjects((prev) => {
         try {
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+          const snapshot = JSON.stringify({
             objs: prev, pg: nextPage + 1, tot: newTotal, scrollY: window.scrollY,
             filters: filtersRef.current,
-          }));
+          });
+          sessionStorage.setItem(SESSION_KEY, snapshot);
+          if (isHomeFilters(filtersRef.current)) {
+            sessionStorage.setItem(HOME_SESSION_KEY, snapshot);
+          }
         } catch { /* storage full */ }
         return prev;
       });
