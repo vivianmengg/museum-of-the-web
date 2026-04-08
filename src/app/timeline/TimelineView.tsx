@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Civilization, TimelineObject } from "./page";
 
@@ -210,6 +210,37 @@ export default function TimelineView({ objects, civilizations }: Props) {
   const [dragging, setDragging] = useState(false);
   const [openContext, setOpenContext] = useState<string | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const hintedRef = useRef(false);
+  const hintRafRef = useRef<number | null>(null);
+
+  // On mount: nudge the scrubber right then left to hint it's draggable
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (hintedRef.current) return;
+      const startTime = performance.now();
+      const DURATION = 1800; // ms for full left-right-back
+
+      function tick(now: number) {
+        if (hintedRef.current) return;
+        const p = Math.min((now - startTime) / DURATION, 1);
+        // smooth path: 0 → +1 → -1 → 0 using a sine-based curve
+        const offset = Math.sin(p * Math.PI * 2) * (1 - p);
+        setYear(Math.round(offset * 400));
+        if (p < 1) {
+          hintRafRef.current = requestAnimationFrame(tick);
+        } else {
+          setYear(0);
+        }
+      }
+
+      hintRafRef.current = requestAnimationFrame(tick);
+    }, 900);
+
+    return () => {
+      clearTimeout(t);
+      if (hintRafRef.current) cancelAnimationFrame(hintRafRef.current);
+    };
+  }, []);
 
   const civMap = new Map(civilizations.map((c) => [c.id, c]));
 
@@ -229,6 +260,9 @@ export default function TimelineView({ objects, civilizations }: Props) {
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
+    // Cancel hint animation on first interaction
+    hintedRef.current = true;
+    if (hintRafRef.current) cancelAnimationFrame(hintRafRef.current);
     setDragging(true);
     setYear(yearFromPointer(e.clientX));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

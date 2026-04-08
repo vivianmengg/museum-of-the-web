@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Masonry from "react-masonry-css";
 import ObjectCard from "./ObjectCard";
 import FilterBar from "./FilterBar";
 import type { MuseumObject } from "@/types";
 import type { BrowseFilters } from "@/lib/constants";
 import { usePinchZoom, zoomToBreakpoints } from "@/lib/usePinchZoom";
+import { createClient } from "@/lib/supabase/client";
 
 function dedupeKey(title: string, artist: string) {
   const t = title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 24);
@@ -50,7 +52,14 @@ export default function BrowseGrid() {
   const zoom = usePinchZoom(gridRef);
   const breakpoints = zoomToBreakpoints(zoom);
 
+  const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
+
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setIsSignedIn(!!data.user));
+  }, []);
 
   // Restore scroll position + loaded objects from sessionStorage on back-navigation
   useEffect(() => {
@@ -210,6 +219,15 @@ export default function BrowseGrid() {
 
   return (
     <div ref={gridRef}>
+      {isSignedIn === false && (
+        <p className="text-xs text-[var(--muted)] mb-4 px-1">
+          Tap any object to explore.{" "}
+          <Link href="/auth" className="text-[var(--foreground)] underline underline-offset-2">
+            Sign in
+          </Link>
+          {" "}to save to your collection.
+        </p>
+      )}
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-[var(--muted)]">
           {total > 0 ? `${total.toLocaleString()} objects` : ""}

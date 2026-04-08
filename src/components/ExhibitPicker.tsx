@@ -259,6 +259,15 @@ export default function ExhibitPicker({ object, onClose }: Props) {
         }
       </div>
 
+      {!signedIn && (
+        <div className="px-3 py-2 border-t border-[var(--border)]">
+          <p className="text-[10px] text-[var(--muted)]">
+            <a href="/auth" className="text-[var(--foreground)] underline underline-offset-2">Sign in</a>
+            {" "}to sync your collection across devices.
+          </p>
+        </div>
+      )}
+
       <div className="border-t border-[var(--border)]">
         {creating ? (
           <form onSubmit={handleCreate} className="flex items-center gap-1 px-3 py-2">
