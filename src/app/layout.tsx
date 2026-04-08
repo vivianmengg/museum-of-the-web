@@ -39,7 +39,7 @@ export default function RootLayout({
           <Nav />
           <main className="flex-1 pt-14 pb-20 sm:pb-0">{children}</main>
           <footer className="py-12 text-center text-xs text-[var(--muted)] opacity-50">
-            objects belong to their institutions. memories belong to you.
+            made with ♥ by vivian m
           </footer>
           <CurationTray />
         </CurationProvider>
