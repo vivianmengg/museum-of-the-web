@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { createStaticClient } from "@/lib/supabase/static";
 import type { MuseumObject } from "@/types";
+import ArtistGrid from "./ArtistGrid";
 
 function rowToObject(row: Record<string, unknown>): MuseumObject {
   return {
@@ -23,6 +23,8 @@ function rowToObject(row: Record<string, unknown>): MuseumObject {
   };
 }
 
+const PAGE_SIZE = 200;
+
 export default async function ArtistPage({
   params,
 }: {
@@ -32,21 +34,19 @@ export default async function ArtistPage({
   const artistName = decodeURIComponent(name);
 
   const supabase = createStaticClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("objects_cache")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("artist_name", artistName)
     .not("thumbnail_url", "is", null)
     .order("date")
-    .limit(200);
+    .range(0, PAGE_SIZE - 1);
 
   const objects = (data ?? []).map(rowToObject);
+  const total = count ?? 0;
 
-  // Use the first exact-ish match as the canonical display name
   const displayName =
-    objects.find((o) => o.artistName.toLowerCase() === artistName.toLowerCase())?.artistName
-    ?? objects[0]?.artistName
-    ?? artistName;
+    objects[0]?.artistName ?? artistName;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -61,37 +61,13 @@ export default async function ArtistPage({
         {displayName}
       </h1>
       <p className="text-xs text-[var(--muted)] mb-10">
-        {objects.length} work{objects.length !== 1 ? "s" : ""} in the collection
+        {total.toLocaleString()} work{total !== 1 ? "s" : ""} in the collection
       </p>
 
-      {objects.length === 0 ? (
+      {total === 0 ? (
         <p className="text-[var(--muted)] text-sm">No works found for this artist.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {objects.map((obj) => (
-            <Link
-              key={obj.id}
-              href={`/object/${obj.id}`}
-              className="block group relative aspect-square overflow-hidden rounded-md bg-[var(--border)]/20"
-            >
-              {obj.thumbnailUrl && (
-                <Image
-                  src={obj.thumbnailUrl}
-                  alt={obj.title}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                  className="object-cover"
-                  unoptimized
-                />
-              )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-              <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform bg-gradient-to-t from-black/60 to-transparent">
-                <p className="text-white text-xs leading-snug line-clamp-2">{obj.title}</p>
-                {obj.date && <p className="text-white/70 text-[10px] mt-0.5">{obj.date}</p>}
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ArtistGrid artistName={artistName} initialObjects={objects} total={total} />
       )}
     </div>
   );
