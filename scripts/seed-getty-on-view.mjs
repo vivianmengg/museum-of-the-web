@@ -112,10 +112,12 @@ function findReferredTo(arr, label) {
 
 function extractThumbnail(imageUrl) {
   if (!imageUrl) return null;
-  // Getty IIIF: append /full/!300,300/0/default.jpg
-  if (imageUrl.includes("/iiif/")) {
-    return `${imageUrl}/full/!300,300/0/default.jpg`;
-  }
+  // Getty representation URLs already end with /full/full/0/default.jpg
+  // Strip that suffix to get the IIIF base, then append the thumbnail size
+  const base = imageUrl.replace(/\/full\/full\/0\/default\.jpg$/, "");
+  if (base !== imageUrl) return `${base}/full/!300,300/0/default.jpg`;
+  // Fallback: bare IIIF base URL
+  if (imageUrl.includes("/iiif/")) return `${imageUrl}/full/!300,300/0/default.jpg`;
   return imageUrl;
 }
 
