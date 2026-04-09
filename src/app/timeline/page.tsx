@@ -85,9 +85,9 @@ export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boo
 export function parseDateToYear(date: string): number | null {
   if (!date) return null;
   const s = date.toLowerCase()
-    .replace(/\bca\.?\b|\bcirca\b|\bc\.\b/g, "")
-    .replace(/b\.c\.e?\./g, "bce")
-    .replace(/a\.d\./g, "ce")
+    .replace(/b\.c\.e?\.?/g, "bce")
+    .replace(/a\.d\.?/g, "ce")
+    .replace(/\bca\.?\s*|\bcirca\s*/g, "")
     .trim();
 
   const bceRange = s.match(/(\d+)\s*[–\-]\s*(\d+)\s*bc[e]?/);
