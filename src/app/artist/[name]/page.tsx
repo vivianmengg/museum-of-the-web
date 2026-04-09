@@ -35,7 +35,7 @@ export default async function ArtistPage({
   const { data } = await supabase
     .from("objects_cache")
     .select("*")
-    .ilike("artist_name", `%${artistName}%`)
+    .eq("artist_name", artistName)
     .not("thumbnail_url", "is", null)
     .order("date")
     .limit(200);
