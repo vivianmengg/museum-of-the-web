@@ -110,13 +110,28 @@ export async function fetchAicPage(
     });
   }
 
+  // Daily seed — rotates results each day, stable within a day
+  const d = new Date();
+  const dailySeed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+
+  // Wrap in function_score for random ordering on free browse; keep relevance sort for search
+  const esQuery = filters.q
+    ? { bool: { must: mustClauses } }
+    : {
+        function_score: {
+          query: { bool: { must: mustClauses } },
+          functions: [{ random_score: { seed: dailySeed + page, field: "id" } }],
+          boost_mode: "replace",
+        },
+      };
+
   try {
     // ── 1. Search AIC ─────────────────────────────────────────────────────────
     const res = await fetch(`${AIC_BASE}/artworks/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "AIC-User-Agent": "museum-of-the-web/1.0" },
       body: JSON.stringify({
-        query: { bool: { must: mustClauses } },
+        query: esQuery,
         fields: AIC_FIELDS.split(","),
         limit: AIC_PAGE_SIZE,
         offset,
