@@ -78,7 +78,6 @@ export default async function RegionPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <div className="w-2 h-2 rounded-full mb-1.5" style={{ backgroundColor: civ.color }} />
                     <p className="text-white text-sm font-medium leading-snug">{civ.label}</p>
                   </div>
                 </Link>
