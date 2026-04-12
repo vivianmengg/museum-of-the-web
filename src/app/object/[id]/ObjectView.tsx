@@ -15,6 +15,12 @@ const INSTITUTION_LABELS: Record<string, string> = {
   rijks: "Rijksmuseum",
   moma: "Museum of Modern Art",
   getty: "J. Paul Getty Museum",
+  harvard: "Harvard Art Museums",
+  cleveland: "Cleveland Museum of Art",
+  smithsonian: "Smithsonian Institution",
+  colbase: "ColBase",
+  brooklyn: "Brooklyn Museum",
+  wcma: "Williams College Museum of Art",
 };
 
 export default function ObjectView({ object, currentUserId }: { object: MuseumObject; currentUserId: string | null }) {
@@ -119,7 +125,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
                 {object.artistName ? (
                   <Link
                     href={`/artist/${encodeURIComponent(object.artistName)}`}
-                    className="hover:text-[var(--foreground)] transition-colors"
+                    className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2 decoration-[var(--border)] hover:decoration-[var(--muted)]"
                   >
                     {object.artistName}
                   </Link>
