@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import type { MuseumObject } from "@/types";
-import { parseDateToYear } from "@/app/timeline/page";
+import { parseDateToYear } from "@/lib/parseDate";
 
 const WINDOW = 300; // ± years when scrubber is active
 
