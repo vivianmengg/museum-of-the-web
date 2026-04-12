@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import type { MuseumObject } from "@/types";
+import { parseDateToYear } from "@/app/timeline/page";
+
+const WINDOW = 300; // ± years when scrubber is active
+
+function formatYear(y: number) {
+  const abs = Math.abs(Math.round(y));
+  if (y < 0) return `${abs} BCE`;
+  if (y === 0) return "0";
+  return `${abs} CE`;
+}
 
 export default function RegionGrid({
   objects,
@@ -14,14 +24,153 @@ export default function RegionGrid({
   color: string;
 }) {
   const [activeCulture, setActiveCulture] = useState<string | null>(null);
+  const [activeYear, setActiveYear] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  const filtered = activeCulture
-    ? objects.filter((o) => o.culture === activeCulture)
-    : objects;
+  // Attach years to objects
+  const withYears = useMemo(() =>
+    objects.map((o) => {
+      const y = o.date ? parseDateToYear(o.date) : null;
+      return { obj: o, year: y };
+    }),
+  [objects]);
+
+  // Timeline range from actual object years
+  const years = withYears.map((o) => o.year).filter((y): y is number => y !== null);
+  const START = years.length ? Math.min(...years) : -3000;
+  const END   = years.length ? Math.max(...years) : 2026;
+  const RANGE = Math.max(END - START, 1);
+  const BUCKETS = 120;
+
+  // Density sparkline
+  const density = useMemo(() => {
+    const d = Array(BUCKETS).fill(0) as number[];
+    for (const y of years) {
+      const idx = Math.floor(((y - START) / RANGE) * (BUCKETS - 1));
+      if (idx >= 0 && idx < BUCKETS) d[idx]++;
+    }
+    return d;
+  }, [years, START, RANGE]); // eslint-disable-line react-hooks/exhaustive-deps
+  const maxDensity = Math.max(...density, 1);
+
+  // Scrubber interaction
+  function yearFromPointer(clientX: number) {
+    const track = trackRef.current;
+    if (!track) return START;
+    const { left, width } = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - left) / width));
+    return Math.round(START + pct * RANGE);
+  }
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragging(true);
+    setActiveYear(yearFromPointer(e.clientX));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragging) return;
+    setActiveYear(yearFromPointer(e.clientX));
+  }, [dragging]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onPointerUp = useCallback(() => setDragging(false), []);
+
+  // Filter objects
+  const filtered = useMemo(() => {
+    let result = withYears;
+    if (activeCulture) result = result.filter((o) => o.obj.culture === activeCulture);
+    if (activeYear !== null) {
+      result = result.filter((o) => o.year !== null && Math.abs(o.year - activeYear) <= WINDOW);
+    }
+    return result.map((o) => o.obj);
+  }, [withYears, activeCulture, activeYear]);
+
+  const thumbPct = activeYear !== null ? ((activeYear - START) / RANGE) * 100 : null;
 
   return (
     <>
-      {/* Culture sub-filters */}
+      {/* ── Timeline scrubber (desktop only) ── */}
+      <div className="hidden sm:block mb-8 ml-6">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs text-[var(--muted)]">
+            {activeYear !== null
+              ? `${formatYear(activeYear - WINDOW)} – ${formatYear(activeYear + WINDOW)}`
+              : "Drag to filter by period"}
+          </p>
+          {activeYear !== null && (
+            <button
+              onClick={() => setActiveYear(null)}
+              className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            >
+              Show all
+            </button>
+          )}
+        </div>
+
+        <div
+          ref={trackRef}
+          className="relative h-10 rounded overflow-hidden bg-[var(--border)]/30 cursor-col-resize select-none"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+        >
+          {/* Density bars */}
+          <div className="absolute inset-0 flex items-end gap-px">
+            {density.map((count, i) => (
+              <div
+                key={i}
+                className="flex-1"
+                style={{
+                  height: `${(count / maxDensity) * 100}%`,
+                  backgroundColor: count > 0
+                    ? `${color}${Math.round(40 + (count / maxDensity) * 180).toString(16).padStart(2, "0")}`
+                    : "transparent",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Active window highlight */}
+          {activeYear !== null && thumbPct !== null && (
+            <div
+              className="absolute inset-y-0 pointer-events-none"
+              style={{
+                left:  `${Math.max(0, ((activeYear - WINDOW - START) / RANGE) * 100)}%`,
+                right: `${Math.max(0, 100 - ((activeYear + WINDOW - START) / RANGE) * 100)}%`,
+                backgroundColor: `${color}30`,
+                borderLeft:  `1px solid ${color}80`,
+                borderRight: `1px solid ${color}80`,
+              }}
+            />
+          )}
+
+          {/* Thumb */}
+          {thumbPct !== null && (
+            <div
+              className="absolute top-0 bottom-0 w-0.5 pointer-events-none"
+              style={{ left: `${thumbPct}%`, backgroundColor: color, transform: "translateX(-50%)" }}
+            >
+              <div
+                className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full
+                  text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap"
+                style={{ backgroundColor: color, color: "white" }}
+              >
+                {formatYear(activeYear!)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tick labels */}
+        <div className="relative h-4 mt-1 text-[9px] text-[var(--muted)]">
+          <span className="absolute left-0">{formatYear(START)}</span>
+          <span className="absolute left-1/2 -translate-x-1/2">{formatYear(Math.round((START + END) / 2))}</span>
+          <span className="absolute right-0">{formatYear(END)}</span>
+        </div>
+      </div>
+
+      {/* ── Culture sub-filters ── */}
       {cultures.length > 1 && (
         <div className="flex flex-wrap gap-2 mb-8 ml-6">
           <button
@@ -51,7 +200,7 @@ export default function RegionGrid({
         </div>
       )}
 
-      {/* Grid */}
+      {/* ── Grid ── */}
       <div className="columns-2 sm:columns-3 md:columns-4 gap-3 space-y-3">
         {filtered.map((obj) => (
           <Link
@@ -91,7 +240,9 @@ export default function RegionGrid({
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-sm text-[var(--muted)] text-center py-16">No objects found.</p>
+        <p className="text-sm text-[var(--muted)] text-center py-16">
+          {activeYear !== null ? "No objects in this period." : "No objects found."}
+        </p>
       )}
     </>
   );
