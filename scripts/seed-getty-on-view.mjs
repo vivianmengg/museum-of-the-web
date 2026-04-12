@@ -121,6 +121,25 @@ function extractThumbnail(imageUrl) {
   return imageUrl;
 }
 
+function iiifInfoUrl(imageUrl) {
+  if (!imageUrl) return null;
+  const base = imageUrl.replace(/\/full\/.*$/, "");
+  if (!base.includes("/iiif/")) return null;
+  return `${base}/info.json`;
+}
+
+async function fetchImageDimensions(imageUrl) {
+  const url = iiifInfoUrl(imageUrl);
+  if (!url) return { image_width: 4, image_height: 3 };
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return { image_width: 4, image_height: 3 };
+    const json = await res.json();
+    if (json.width && json.height) return { image_width: json.width, image_height: json.height };
+  } catch { /* fall through */ }
+  return { image_width: 4, image_height: 3 };
+}
+
 async function fetchObject(uuid) {
   const url = `${OBJECT_BASE}/${uuid}`;
   const res = await fetch(url, {
@@ -131,7 +150,7 @@ async function fetchObject(uuid) {
   return obj;
 }
 
-function parseObject(uuid, obj) {
+async function parseObject(uuid, obj) {
   const title = obj._label || "Untitled";
 
   // Artist
@@ -143,10 +162,11 @@ function parseObject(uuid, obj) {
   const yearEnd = parseISOYear(timespan?.end_of_the_end);
   const dateLabel = timespan?._label ?? "";
 
-  // Image
+  // Image — dims fetched async, so parseObject is now async
   const imageUrl = obj.representation?.[0]?.id ?? null;
   const thumbnailUrl = extractThumbnail(imageUrl);
   if (!thumbnailUrl) return null; // skip objects without images
+  const { image_width, image_height } = await fetchImageDimensions(imageUrl);
 
   // Metadata from referred_to_by
   const refs = obj.referred_to_by;
@@ -188,8 +208,8 @@ function parseObject(uuid, obj) {
     medium,
     image_url: imageUrl,
     thumbnail_url: thumbnailUrl,
-    image_width: 4,
-    image_height: 3,
+    image_width,
+    image_height,
     department: department || location,
     artist_name: artistName,
     credit_line: creditLine,
@@ -233,7 +253,7 @@ async function main() {
         try {
           const obj = await fetchObject(uuid);
           if (!obj) return null;
-          return parseObject(uuid, obj);
+          return await parseObject(uuid, obj);
         } catch {
           return null;
         }
