@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import ExhibitsShell from "./ExhibitsShell";
 
 export default function ExhibitsPage() {
-  return <ExhibitsShell />;
+  return <Suspense><ExhibitsShell /></Suspense>;
 }
