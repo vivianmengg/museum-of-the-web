@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import LocalExhibits from "./LocalExhibits";
@@ -19,7 +20,8 @@ type CloudExhibit = {
 };
 
 export default function ExhibitsShell() {
-  const [tab, setTab] = useState<Tab>("exhibits");
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<Tab>(searchParams.get("tab") === "saved" ? "saved" : "exhibits");
   const [cloudExhibits, setCloudExhibits] = useState<CloudExhibit[] | null>(null);
   const [signedIn, setSignedIn] = useState(false);
 

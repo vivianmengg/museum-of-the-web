@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { useLocalExhibits } from "@/lib/useLocalExhibits";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "./Toast";
 import type { MuseumObject } from "@/types";
 
 type Props = {
@@ -21,6 +22,7 @@ type CloudExhibit = {
 
 export default function ExhibitPicker({ object, onClose }: Props) {
   const local = useLocalExhibits();
+  const { show: showToast } = useToast();
   const [signedIn, setSignedIn] = useState(false);
   const [cloudExhibits, setCloudExhibits] = useState<CloudExhibit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -134,6 +136,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
         : e
       )
     );
+    if (!alreadyIn) showToast({ message: "Added.", href: "/exhibits", linkLabel: "View your collection →" });
     onClose();
   }
 
@@ -157,6 +160,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
     } else {
       local.createWithObject(newTitle, object);
     }
+    showToast({ message: "Added.", href: "/exhibits", linkLabel: "View your collection →" });
     setNewTitle("");
     setCreating(false);
     setSubmitting(false);
@@ -167,6 +171,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
       local.removeObject(exhibitId, object.id);
     } else {
       local.addObject(exhibitId, object);
+      showToast({ message: "Added.", href: "/exhibits", linkLabel: "View your collection →" });
     }
     onClose();
   }

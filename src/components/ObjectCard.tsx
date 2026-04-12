@@ -7,10 +7,12 @@ import type { MuseumObject } from "@/types";
 import { useFavorites } from "@/lib/useFavorites";
 import { useLocalExhibits } from "@/lib/useLocalExhibits";
 import ExhibitPicker from "./ExhibitPicker";
+import { useToast } from "./Toast";
 
 export default function ObjectCard({ object, fillParent, priority }: { object: MuseumObject; fillParent?: boolean; priority?: boolean }) {
   const { isFavorited, toggle: toggleFavorite } = useFavorites();
   const { objectExhibits } = useLocalExhibits();
+  const { show: showToast } = useToast();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -60,10 +62,14 @@ export default function ObjectCard({ object, fillParent, priority }: { object: M
 
       {/* Heart — save to favorites */}
       <button
-        onClick={() => toggleFavorite(object)}
+        onClick={() => {
+          const wasHearted = hearted;
+          toggleFavorite(object);
+          if (!wasHearted) showToast({ message: "Saved.", href: "/exhibits?tab=saved", linkLabel: "View your likes →" });
+        }}
         aria-label={hearted ? "Unfavorite" : "Save to favorites"}
         className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center shadow transition-all duration-150 bg-white/90
-          ${hearted ? "opacity-100 scale-100" : "opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"}`}
+          ${hearted ? "opacity-100 scale-100" : "opacity-60 sm:opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"}`}
       >
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path

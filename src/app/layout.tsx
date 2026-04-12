@@ -5,6 +5,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import { CurationProvider } from "@/components/CurationContext";
 import CurationTray from "@/components/CurationTray";
+import { ToastProvider } from "@/components/Toast";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -35,14 +36,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-        <CurationProvider>
-          <Nav />
-          <main className="flex-1 pt-14 pb-20 sm:pb-0">{children}</main>
-          <footer className="py-12 text-center text-xs text-[var(--muted)] opacity-50">
-            made with ♥ by vivian m
-          </footer>
-          <CurationTray />
-        </CurationProvider>
+        <ToastProvider>
+          <CurationProvider>
+            <Nav />
+            <main className="flex-1 pt-14 pb-20 sm:pb-0">{children}</main>
+            <footer className="py-12 text-center text-xs text-[var(--muted)] opacity-50">
+              made with ♥ by vivian m
+            </footer>
+            <CurationTray />
+          </CurationProvider>
+        </ToastProvider>
         <Analytics />
         <SpeedInsights />
       </body>
