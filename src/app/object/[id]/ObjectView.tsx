@@ -80,7 +80,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
           <div className="text-[#6b6560] text-sm py-24">No image available</div>
         )}
 
-        {/* Add to exhibit — floating over image */}
+        {/* Add to collection — floating over image */}
         <div
           className="absolute bottom-4 right-4 z-10"
           onClick={(e) => e.stopPropagation()}
@@ -89,7 +89,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
             onClick={() => setPickerOpen((v) => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-[var(--foreground)] rounded-full shadow hover:bg-white transition-colors"
           >
-            <span className="text-sm leading-none">+</span> Add to exhibit
+            <span className="text-sm leading-none">+</span> Add to collection
           </button>
           {pickerOpen && <ExhibitPicker object={object} onClose={closePicker} />}
         </div>

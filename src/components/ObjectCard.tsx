@@ -86,7 +86,7 @@ export default function ObjectCard({ object, fillParent, priority }: { object: M
       <div className="absolute top-2 right-2">
         <button
           onClick={(e) => { e.preventDefault(); setPickerOpen((v) => !v); }}
-          aria-label="Add to exhibit"
+          aria-label="Add to collection"
           className={`w-7 h-7 rounded-full flex items-center justify-center shadow transition-all duration-150
             ${pinned
               ? "bg-[var(--foreground)] text-[var(--background)] opacity-100 scale-100"
