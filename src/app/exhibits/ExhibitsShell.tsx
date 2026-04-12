@@ -65,7 +65,7 @@ export default function ExhibitsShell() {
           href="/exhibit/new"
           className="text-sm border border-[var(--border)] px-4 py-1.5 rounded-full hover:border-[var(--muted)] transition-colors text-[var(--muted)] hover:text-[var(--foreground)]"
         >
-          + New exhibit
+          + New collection
         </Link>
       </div>
 
@@ -80,7 +80,7 @@ export default function ExhibitsShell() {
                 : "text-[var(--muted)] hover:text-[var(--foreground)]"
             }`}
           >
-            {t === "exhibits" ? "Exhibits" : "Saved objects"}
+            {t === "exhibits" ? "Collections" : "Saved objects"}
             {tab === t && (
               <span className="absolute bottom-0 left-0 right-0 h-px bg-[var(--foreground)]" />
             )}
@@ -125,12 +125,12 @@ function CloudExhibitsList({ exhibits: initial }: { exhibits: CloudExhibit[] }) 
   if (exhibits.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-[var(--muted)] mb-6">No exhibits yet.</p>
+        <p className="text-[var(--muted)] mb-6">No collections yet.</p>
         <Link
           href="/exhibit/new"
           className="text-sm border border-[var(--border)] px-5 py-2 rounded-full hover:border-[var(--muted)] transition-colors"
         >
-          Build your first exhibit
+          Build your first collection
         </Link>
       </div>
     );

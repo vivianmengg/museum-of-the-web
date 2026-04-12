@@ -35,7 +35,7 @@ export default function ExploreShell({
                   : "text-[var(--muted)] hover:text-[var(--foreground)]"
               }`}
             >
-              {t}
+              {t === "exhibits" ? "Collections" : "Artifacts"}
             </button>
           ))}
         </div>
@@ -56,7 +56,7 @@ function ExhibitsView({ exhibits }: { exhibits: PublicExhibit[] }) {
   if (exhibits.length === 0) {
     return (
       <div className="py-24 text-center">
-        <p className="text-[var(--muted)] text-sm mb-4">No published exhibits yet.</p>
+        <p className="text-[var(--muted)] text-sm mb-4">No published collections yet.</p>
         <Link
           href="/exhibit/new"
           className="text-sm border border-[var(--border)] px-5 py-2 rounded-full hover:border-[var(--muted)] transition-colors"

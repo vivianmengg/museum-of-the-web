@@ -251,7 +251,7 @@ export default async function ProfilePage({
           )}
         </Link>
         <Link href={`/profile/${id}?tab=exhibits`} className={tabClass("exhibits")}>
-          Exhibits
+          Collections
           {tab === "exhibits" && (
             <span className="absolute bottom-0 left-0 right-0 h-px bg-[var(--foreground)]" />
           )}

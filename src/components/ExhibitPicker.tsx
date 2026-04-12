@@ -280,7 +280,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
               ref={inputRef}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Exhibit name…"
+              placeholder="Collection name…"
               className="flex-1 text-xs bg-transparent outline-none placeholder:text-[var(--border)]"
               onKeyDown={(e) => { if (e.key === "Escape") setCreating(false); }}
             />
@@ -294,7 +294,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
             onClick={() => setCreating(true)}
             className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
           >
-            <span className="text-base leading-none">+</span> New exhibit
+            <span className="text-base leading-none">+</span> New collection
           </button>
         )}
       </div>

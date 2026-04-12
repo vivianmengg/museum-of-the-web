@@ -53,7 +53,7 @@ export default function ExhibitBuilder() {
     return (
       <div className="max-w-2xl mx-auto px-6 py-24 text-center">
         <h1 className="font-[family-name:var(--font-lora)] italic text-3xl mb-4">
-          New Exhibit
+          New collection
         </h1>
         <p className="text-[var(--muted)] mb-8">
           No objects selected yet. Browse the collection and tap{" "}
@@ -72,7 +72,7 @@ export default function ExhibitBuilder() {
 
   function handleSave() {
     const draft = {
-      title: title.trim() || "Untitled exhibit",
+      title: title.trim() || "Untitled collection",
       statement,
       objects: orderedObjects,
     };
@@ -91,13 +91,13 @@ export default function ExhibitBuilder() {
       <div className="flex items-start justify-between mb-10 gap-4">
         <div className="flex-1">
           <label className="block text-[10px] tracking-widest uppercase text-[var(--muted)] mb-2">
-            Exhibit title
+            Collection title
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Untitled exhibit"
+            placeholder="Untitled collection"
             className="w-full font-[family-name:var(--font-lora)] italic text-3xl bg-transparent border-b border-[var(--border)] focus:border-[var(--muted)] outline-none pb-1 placeholder:text-[var(--border)] transition-colors"
           />
         </div>
