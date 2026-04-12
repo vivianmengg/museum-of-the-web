@@ -288,21 +288,36 @@ export default function TimelineView({ objects, civilizations }: Props) {
     <div className="flex flex-col h-[calc(100dvh-7.5rem)] sm:h-[calc(100dvh-3.5rem)]">
       {/* ── Header ── */}
       <div className="px-3 sm:px-6 pt-4 pb-3 border-b border-[var(--border)] shrink-0">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div>
+        <div className="mb-3">
+          <div className="flex items-baseline justify-between gap-2">
             <h1 className="font-serif text-lg sm:text-xl text-[var(--foreground)]">Art Through the Ages</h1>
-            <p className="text-xs text-[var(--muted)] mt-0.5">
-              {visible.length} objects · {formatYear(year - window_)} – {formatYear(year + window_)}
-            </p>
+            {/* Window presets — inline on desktop */}
+            <div className="hidden sm:flex items-center gap-1 shrink-0">
+              {WINDOW_PRESETS.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => setWindow(p.value)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    window_ === p.value
+                      ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                      : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
-
-          {/* Window presets */}
-          <div className="flex items-center gap-1 shrink-0">
+          <p className="text-xs text-[var(--muted)] mt-0.5">
+            {visible.length} objects · {formatYear(year - window_)} – {formatYear(year + window_)}
+          </p>
+          {/* Window presets — own row on mobile */}
+          <div className="flex sm:hidden items-center gap-1 mt-2">
             {WINDOW_PRESETS.map((p) => (
               <button
                 key={p.value}
                 onClick={() => setWindow(p.value)}
-                className={`text-xs px-2 sm:px-2.5 py-1 rounded-full border transition-colors ${
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   window_ === p.value
                     ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
                     : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
