@@ -136,7 +136,7 @@ export async function fetchAicPage(
         limit: AIC_PAGE_SIZE,
         offset,
       }),
-      next: { revalidate: 3600 },
+      next: { revalidate: 86400 },
     });
 
     if (!res.ok) return { objects: [], total: 0 };
