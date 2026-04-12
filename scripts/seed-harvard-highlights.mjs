@@ -171,7 +171,7 @@ async function main() {
           culture,
           medium:        obj.medium || "",
           image_url:     obj.primaryimageurl,
-          thumbnail_url: obj.primaryimageurl,
+          thumbnail_url: obj.primaryimageurl ? obj.primaryimageurl + "?width=400" : null,
           image_width:   4,
           image_height:  3,
           department:    normalizeDept(obj.department, culture),

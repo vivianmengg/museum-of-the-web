@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import type { MuseumObject } from "@/types";
+import ObjectCard from "@/components/ObjectCard";
 
 const PRESETS = [
   { label: "All", window: null },
@@ -24,7 +24,6 @@ export default function RegionGrid({
   color: string;
   yearMap: Record<string, number>;
 }) {
-  // Compute range from objects that have year data
   const years = useMemo(
     () => objects.map((o) => yearMap[o.id]).filter((y) => y !== undefined) as number[],
     [objects, yearMap]
@@ -40,16 +39,18 @@ export default function RegionGrid({
     if (windowSize === null) return objects;
     return objects.filter((o) => {
       const y = yearMap[o.id];
-      if (y === undefined) return true; // no date data — always show
+      if (y === undefined) return true;
       return y >= center - windowSize && y <= center + windowSize;
     });
   }, [objects, yearMap, center, windowSize]);
+
+  // suppress unused color warning — kept for potential future use
+  void color;
 
   return (
     <>
       {/* Scrubber */}
       <div className="mb-8 space-y-3">
-        {/* Preset buttons */}
         <div className="flex items-center gap-2">
           {PRESETS.map((p) => (
             <button
@@ -71,7 +72,6 @@ export default function RegionGrid({
           )}
         </div>
 
-        {/* Slider — only shown when a window is active */}
         {windowSize !== null && (
           <div className="flex items-center gap-3">
             <span className="text-[10px] text-[var(--muted)] w-16 text-right shrink-0">
@@ -96,42 +96,12 @@ export default function RegionGrid({
         )}
       </div>
 
-      {/* Grid */}
-      <div className="columns-2 sm:columns-3 md:columns-4 gap-3 space-y-3">
+      {/* Grid — same masonry layout as browse */}
+      <div className="columns-2 sm:columns-3 lg:columns-4 gap-1">
         {visible.map((obj) => (
-          <Link
-            key={obj.id}
-            href={`/object/${obj.id}`}
-            className="group block break-inside-avoid rounded-lg overflow-hidden border border-[var(--border)] hover:border-[var(--muted)] transition-colors"
-          >
-            <div
-              className="relative overflow-hidden bg-[var(--border)]/30"
-              style={{ aspectRatio: `${obj.imageWidth}/${obj.imageHeight}` }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={obj.thumbnailUrl!}
-                alt={obj.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                loading="lazy"
-              />
-            </div>
-            <div className="px-2.5 py-2">
-              <p className="text-xs font-medium text-[var(--foreground)] line-clamp-2 leading-snug">
-                {obj.title}
-              </p>
-              {obj.culture && (
-                <p className="text-[10px] mt-0.5 truncate" style={{ color }}>
-                  {obj.culture}
-                </p>
-              )}
-              {obj.date && (
-                <p className="text-[10px] text-[var(--muted)] mt-0.5 opacity-70 truncate">
-                  {obj.date}
-                </p>
-              )}
-            </div>
-          </Link>
+          <div key={obj.id} className="mb-1">
+            <ObjectCard object={obj} />
+          </div>
         ))}
       </div>
 
