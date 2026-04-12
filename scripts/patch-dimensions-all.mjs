@@ -119,9 +119,9 @@ async function patchInstitution(inst) {
 }
 
 async function main() {
-  const target = process.argv[2];
-  const institutions = target
-    ? [target]
+  const targets = process.argv.slice(2);
+  const institutions = targets.length
+    ? targets
     : ["aic", "colbase", "smithsonian", "cleveland", "harvard", "met"];
 
   for (const inst of institutions) {
