@@ -51,6 +51,7 @@ async function fetchObject(id: string): Promise<MuseumObject | null> {
     return fetchRijksObject(id.slice(6));
   }
 
+  // all other institutions are cache-only
   return null;
 }
 

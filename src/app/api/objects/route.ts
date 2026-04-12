@@ -3,6 +3,7 @@ import { fetchMetPage } from "@/lib/met";
 import { fetchAicPage } from "@/lib/aic";
 import { fetchRijksPage } from "@/lib/rijks";
 import { fetchMomaPage } from "@/lib/moma";
+import { fetchSeededPage } from "@/lib/seeded";
 import type { BrowseFilters } from "@/lib/constants";
 import type { MuseumObject } from "@/types";
 
@@ -42,11 +43,12 @@ export async function GET(request: NextRequest) {
   };
 
   try {
-    const [met, aic, rijks, moma] = await Promise.all([
+    const [met, aic, rijks, moma, seeded] = await Promise.all([
       fetchMetPage(filters, page),
       fetchAicPage(filters, page),
       fetchRijksPage(filters, page),
       fetchMomaPage(filters, page),
+      fetchSeededPage(filters, page),
     ]);
 
     // Equal quota per source — each contributes at most 5 objects per page
@@ -56,8 +58,9 @@ export async function GET(request: NextRequest) {
       aic.objects.slice(0, Q),
       rijks.objects.slice(0, Q),
       moma.objects.slice(0, Q),
+      seeded.objects.slice(0, Q),
     );
-    const total = met.total + aic.total + rijks.total + moma.total;
+    const total = met.total + aic.total + rijks.total + moma.total + seeded.total;
 
     return NextResponse.json({ objects, total });
   } catch {

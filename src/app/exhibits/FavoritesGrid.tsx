@@ -5,7 +5,11 @@ import ObjectCard from "@/components/ObjectCard";
 import { useFavorites } from "@/lib/useFavorites";
 
 export default function FavoritesGrid() {
-  const { favorites } = useFavorites();
+  const { favorites, ready } = useFavorites();
+
+  if (!ready) {
+    return <div className="py-16 text-center text-sm text-[var(--muted)] animate-pulse">Loading…</div>;
+  }
 
   if (favorites.length === 0) {
     return (

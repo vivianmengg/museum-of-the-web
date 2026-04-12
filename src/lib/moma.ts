@@ -4,6 +4,15 @@ import { createStaticClient } from "@/lib/supabase/static";
 
 export const MOMA_PAGE_SIZE = 5;
 
+// Objects hidden from browse (disturbing content)
+const BLOCKED_IDS = [
+  "moma-172939", // Verweste Leiche — Die Morduntersuchung (Spoerri)
+  "moma-175253", // Pulverschmauch — Die Morduntersuchung
+  "moma-175254", // Schussrichtungsstab — Die Morduntersuchung
+  "moma-175255", // Beilverletzungen — Die Morduntersuchung
+  "moma-175256", // Selbsterhangen — Die Morduntersuchung
+];
+
 // Each day, start paging from a different offset in the 84k collection.
 // Pages advance sequentially from there, wrapping around if needed.
 const MOMA_APPROX_TOTAL = 85000;
@@ -53,6 +62,7 @@ export async function fetchMomaPage(
         .select("*", { count: "exact" })
         .eq("institution", "moma")
         .not("thumbnail_url", "is", null)
+        .not("id", "in", `(${BLOCKED_IDS.join(",")})`)
         .or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`)
         .range(from, to);
       if (error) return { objects: [], total: 0 };
@@ -69,6 +79,7 @@ export async function fetchMomaPage(
       .select("*")
       .eq("institution", "moma")
       .not("thumbnail_url", "is", null)
+      .not("id", "in", `(${BLOCKED_IDS.join(",")})`)
       .range(from, to);
 
     if (error) return { objects: [], total: 0 };
