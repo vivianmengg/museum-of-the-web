@@ -59,12 +59,15 @@ export default function RegionGrid({
             href={`/object/${obj.id}`}
             className="group block break-inside-avoid rounded-lg overflow-hidden border border-[var(--border)] hover:border-[var(--muted)] transition-colors"
           >
-            <div className="relative overflow-hidden bg-[var(--border)]/30">
+            <div
+              className="relative overflow-hidden bg-[var(--border)]/30"
+              style={{ aspectRatio: `${obj.imageWidth}/${obj.imageHeight}` }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={obj.thumbnailUrl!}
                 alt={obj.title}
-                className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
             </div>
