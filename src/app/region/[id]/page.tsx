@@ -61,6 +61,14 @@ export default async function RegionDetailPage({
   const allRows = (rows ?? []) as Record<string, unknown>[];
   const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);
 
+  // Build year map for client-side scrubber
+  const yearMap: Record<string, number> = {};
+  for (const r of allRows) {
+    if (r.id && typeof r.year_begin === "number") {
+      yearMap[r.id as string] = r.year_begin as number;
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <div className="mb-8">
@@ -79,7 +87,7 @@ export default async function RegionDetailPage({
         </p>
       </div>
 
-      <RegionGrid objects={matched} color={civ.color} />
+      <RegionGrid objects={matched} color={civ.color} yearMap={yearMap} />
     </div>
   );
 }
