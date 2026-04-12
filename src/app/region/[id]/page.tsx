@@ -43,12 +43,20 @@ export default async function RegionDetailPage({
   const supabase = createStaticClient();
 
   const deptFilter = civ.deptMatch[0];
-  const { data: rows } = await supabase
+  let query = supabase
     .from("objects_cache")
     .select("*")
     .not("thumbnail_url", "is", null)
-    .ilike("department", `%${deptFilter}%`)
-    .limit(500);
+    .ilike("department", `%${deptFilter}%`);
+
+  // For civs with a culture list, filter at the DB level so we don't waste
+  // the row budget on the wrong cultures (e.g. fetching all of Asian Art
+  // just to find Chinese objects).
+  if (civ.cultureMatch && civ.cultureMatch.length > 0) {
+    query = query.or(civ.cultureMatch.map((c) => `culture.ilike.%${c}%`).join(","));
+  }
+
+  const { data: rows } = await query.limit(1500);
 
   const allRows = (rows ?? []) as Record<string, unknown>[];
   const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);

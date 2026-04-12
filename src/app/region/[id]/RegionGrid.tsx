@@ -5,7 +5,12 @@ import Link from "next/link";
 import type { MuseumObject } from "@/types";
 import { parseDateToYear } from "@/lib/parseDate";
 
-const WINDOW = 300; // ± years when scrubber is active
+const WINDOW_PRESETS = [
+  { label: "±50 yr",  value: 50  },
+  { label: "±150 yr", value: 150 },
+  { label: "±300 yr", value: 300 },
+  { label: "±500 yr", value: 500 },
+];
 
 function formatYear(y: number) {
   const abs = Math.abs(Math.round(y));
@@ -25,6 +30,7 @@ export default function RegionGrid({
 }) {
   const [activeCulture, setActiveCulture] = useState<string | null>(null);
   const [activeYear, setActiveYear] = useState<number | null>(null);
+  const [window_, setWindow] = useState(150);
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -81,10 +87,10 @@ export default function RegionGrid({
     let result = withYears;
     if (activeCulture) result = result.filter((o) => o.obj.culture === activeCulture);
     if (activeYear !== null) {
-      result = result.filter((o) => o.year !== null && Math.abs(o.year - activeYear) <= WINDOW);
+      result = result.filter((o) => o.year !== null && Math.abs(o.year - activeYear) <= window_);
     }
     return result.map((o) => o.obj);
-  }, [withYears, activeCulture, activeYear]);
+  }, [withYears, activeCulture, activeYear, window_]);
 
   const thumbPct = activeYear !== null ? ((activeYear - START) / RANGE) * 100 : null;
 
@@ -95,17 +101,35 @@ export default function RegionGrid({
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-[var(--muted)]">
             {activeYear !== null
-              ? `${formatYear(activeYear - WINDOW)} – ${formatYear(activeYear + WINDOW)}`
+              ? `${formatYear(activeYear - window_)} – ${formatYear(activeYear + window_)}`
               : "Drag to filter by period"}
           </p>
-          {activeYear !== null && (
-            <button
-              onClick={() => setActiveYear(null)}
-              className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-            >
-              Show all
-            </button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {WINDOW_PRESETS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => setWindow(p.value)}
+                className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
+                  window_ === p.value
+                    ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                    : "border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+            {activeYear !== null && (
+              <>
+                <span className="text-[var(--border)] text-xs">·</span>
+                <button
+                  onClick={() => setActiveYear(null)}
+                  className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                >
+                  Show all
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div
@@ -136,8 +160,8 @@ export default function RegionGrid({
             <div
               className="absolute inset-y-0 pointer-events-none"
               style={{
-                left:  `${Math.max(0, ((activeYear - WINDOW - START) / RANGE) * 100)}%`,
-                right: `${Math.max(0, 100 - ((activeYear + WINDOW - START) / RANGE) * 100)}%`,
+                left:  `${Math.max(0, ((activeYear - window_ - START) / RANGE) * 100)}%`,
+                right: `${Math.max(0, 100 - ((activeYear + window_ - START) / RANGE) * 100)}%`,
                 backgroundColor: `${color}30`,
                 borderLeft:  `1px solid ${color}80`,
                 borderRight: `1px solid ${color}80`,
