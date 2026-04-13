@@ -8,22 +8,24 @@ export const revalidate = 3600;
 async function getMediumPreviews() {
   const supabase = createStaticClient();
 
-  return Promise.all(
-    MEDIUMS.map(async (medium) => {
-      const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
-      const { data } = await supabase
-        .from("objects_cache")
-        .select("id, thumbnail_url")
-        .not("thumbnail_url", "is", null)
-        .or(orFilter)
-        .limit(4);
+  // Run sequentially — 12 parallel ilike full-table scans overwhelm the DB
+  const results = [];
+  for (const medium of MEDIUMS) {
+    const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
+    const { data, error } = await supabase
+      .from("objects_cache")
+      .select("id, thumbnail_url")
+      .not("thumbnail_url", "is", null)
+      .or(orFilter)
+      .limit(4);
 
-      return {
-        ...medium,
-        previews: (data ?? []).map((r) => r.thumbnail_url as string),
-      };
-    })
-  );
+    if (error) console.error(`medium preview ${medium.id}:`, error.message);
+    results.push({
+      ...medium,
+      previews: (data ?? []).map((r) => r.thumbnail_url as string),
+    });
+  }
+  return results;
 }
 
 export default async function MediumPage() {

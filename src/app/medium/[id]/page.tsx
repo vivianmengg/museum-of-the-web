@@ -43,12 +43,14 @@ export default async function MediumDetailPage({
   const supabase = createStaticClient();
   const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
 
-  const { data: rows } = await supabase
+  const { data: rows, error: rowsError } = await supabase
     .from("objects_cache")
     .select("id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin")
     .not("thumbnail_url", "is", null)
     .or(orFilter)
     .limit(800);
+
+  if (rowsError) console.error(`medium detail ${id}:`, rowsError.message);
 
   const objects = (rows ?? []).map(rowToObject);
 
