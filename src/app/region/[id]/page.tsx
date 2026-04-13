@@ -42,30 +42,36 @@ export default async function RegionDetailPage({
 
   const supabase = createStaticClient();
 
-  // Build department filter covering all deptMatch entries
-  const deptOr = civ.deptMatch.map((d) => `department.ilike.%${d}%`).join(",");
+  const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
 
   let query = supabase
     .from("objects_cache")
-    .select("id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin")
-    .not("thumbnail_url", "is", null)
-    .or(deptOr);
+    .select(COLS)
+    .not("thumbnail_url", "is", null);
 
-  // For civs with a culture list, filter at the DB level so we don't waste
-  // the row budget on the wrong cultures (e.g. fetching all of Asian Art
-  // just to find Chinese objects).
+  // Department filter — use .ilike() for single-entry deptMatch to avoid the
+  // PostgREST .or() parser splitting on commas inside values like "Africa, Oceania".
+  if (civ.deptMatch.length === 1) {
+    query = query.ilike("department", `%${civ.deptMatch[0]}%`);
+  } else {
+    query = query.or(civ.deptMatch.map((d) => `department.ilike.%${d}%`).join(","));
+  }
+
+  // Culture filter — narrow to this specific civilisation when it shares a
+  // department with others (e.g. all of Asian Art).
   if (civ.cultureMatch && civ.cultureMatch.length > 0) {
     query = query.or(civ.cultureMatch.map((c) => `culture.ilike.%${c}%`).join(","));
   }
 
-  // Paginate to get everything — anon key has a PostgREST row cap per request
+  // Paginate to get everything regardless of PostgREST max_rows setting.
   const PAGE = 1000;
   const allRows: Record<string, unknown>[] = [];
   for (let page = 0; ; page++) {
-    const { data } = await query.range(page * PAGE, (page + 1) * PAGE - 1);
+    const { data, error } = await query.range(page * PAGE, (page + 1) * PAGE - 1);
+    if (error) { console.error(`region ${id} page ${page}:`, error.message); break; }
     if (!data || data.length === 0) break;
     allRows.push(...(data as Record<string, unknown>[]));
-    if (data.length < PAGE) break; // last page
+    if (data.length < PAGE) break;
   }
   const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);
 
