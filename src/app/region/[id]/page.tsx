@@ -58,9 +58,15 @@ export default async function RegionDetailPage({
     query = query.or(civ.cultureMatch.map((c) => `culture.ilike.%${c}%`).join(","));
   }
 
-  const { data: rows } = await query.limit(5000);
-
-  const allRows = (rows ?? []) as Record<string, unknown>[];
+  // Paginate to get everything — anon key has a PostgREST row cap per request
+  const PAGE = 1000;
+  const allRows: Record<string, unknown>[] = [];
+  for (let page = 0; ; page++) {
+    const { data } = await query.range(page * PAGE, (page + 1) * PAGE - 1);
+    if (!data || data.length === 0) break;
+    allRows.push(...(data as Record<string, unknown>[]));
+    if (data.length < PAGE) break; // last page
+  }
   const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);
 
   // Build year map for client-side scrubber
