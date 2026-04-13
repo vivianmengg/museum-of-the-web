@@ -25,17 +25,17 @@ export default function RegionGrid({
   const maxYear = years.length ? Math.max(...years) : 2026;
   const midYear = Math.round((minYear + maxYear) / 2);
 
-  const [year, setYear]     = useState(midYear);
-  const [window_, setWindow] = useState(150);
+  const [year, setYear]           = useState(midYear);
+  const [window_, setWindow]      = useState<number | null>(null); // null = All
 
-  const visible = useMemo(
-    () => objects.filter((o) => {
+  const visible = useMemo(() => {
+    if (window_ === null) return objects;
+    return objects.filter((o) => {
       const y = yearMap[o.id];
       if (y === undefined) return false;
       return y >= year - window_ && y <= year + window_;
-    }),
-    [objects, yearMap, year, window_]
-  );
+    });
+  }, [objects, yearMap, year, window_]);
 
   return (
     <>

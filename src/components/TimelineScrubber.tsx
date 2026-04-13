@@ -10,6 +10,7 @@ function formatYear(y: number): string {
 }
 
 const WINDOW_PRESETS = [
+  { label: "All",     value: null },
   { label: "±50 yr",  value: 50  },
   { label: "±150 yr", value: 150 },
   { label: "±300 yr", value: 300 },
@@ -19,9 +20,9 @@ const WINDOW_PRESETS = [
 interface Props {
   years: number[];          // all object years — used to draw the density sparkline
   year: number;
-  window: number;
+  window: number | null;    // null = show all
   onYearChange: (y: number) => void;
-  onWindowChange: (w: number) => void;
+  onWindowChange: (w: number | null) => void;
   visibleCount: number;
   start?: number;           // timeline start (default: min year or -7000)
   end?: number;             // timeline end   (default: max year or 2026)
@@ -85,7 +86,7 @@ export default function TimelineScrubber({
         <div className="flex items-center gap-1">
           {WINDOW_PRESETS.map((p) => (
             <button
-              key={p.value}
+              key={String(p.value)}
               onClick={() => onWindowChange(p.value)}
               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                 window_ === p.value
@@ -98,12 +99,14 @@ export default function TimelineScrubber({
           ))}
         </div>
         <p className="text-xs text-[var(--muted)] shrink-0">
-          {visibleCount} objects · {formatYear(year - window_)} – {formatYear(year + window_)}
+          {window_ === null
+            ? `${visibleCount} objects`
+            : `${visibleCount} objects · ${formatYear(year - window_)} – ${formatYear(year + window_)}`}
         </p>
       </div>
 
-      {/* Scrubber track */}
-      <div className="relative pt-1 pb-5 cursor-col-resize">
+      {/* Scrubber track — hidden in All mode */}
+      {window_ !== null && <div className="relative pt-1 pb-5 cursor-col-resize">
         <div
           ref={trackRef}
           className="relative h-10 rounded overflow-hidden bg-[var(--border)]/30"
@@ -177,7 +180,7 @@ export default function TimelineScrubber({
             );
           })}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
