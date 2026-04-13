@@ -42,12 +42,14 @@ export default async function RegionDetailPage({
 
   const supabase = createStaticClient();
 
-  const deptFilter = civ.deptMatch[0];
+  // Build department filter covering all deptMatch entries
+  const deptOr = civ.deptMatch.map((d) => `department.ilike.%${d}%`).join(",");
+
   let query = supabase
     .from("objects_cache")
-    .select("*")
+    .select("id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin")
     .not("thumbnail_url", "is", null)
-    .ilike("department", `%${deptFilter}%`);
+    .or(deptOr);
 
   // For civs with a culture list, filter at the DB level so we don't waste
   // the row budget on the wrong cultures (e.g. fetching all of Asian Art
@@ -56,7 +58,7 @@ export default async function RegionDetailPage({
     query = query.or(civ.cultureMatch.map((c) => `culture.ilike.%${c}%`).join(","));
   }
 
-  const { data: rows } = await query.limit(1500);
+  const { data: rows } = await query.limit(5000);
 
   const allRows = (rows ?? []) as Record<string, unknown>[];
   const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);
