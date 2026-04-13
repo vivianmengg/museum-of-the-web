@@ -11,16 +11,15 @@ async function getMediumPreviews() {
   return Promise.all(
     MEDIUMS.map(async (medium) => {
       const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
-      const { data, count } = await supabase
+      const { data } = await supabase
         .from("objects_cache")
-        .select("id, thumbnail_url", { count: "exact" })
+        .select("id, thumbnail_url")
         .not("thumbnail_url", "is", null)
         .or(orFilter)
         .limit(4);
 
       return {
         ...medium,
-        count: count ?? 0,
         previews: (data ?? []).map((r) => r.thumbnail_url as string),
       };
     })
@@ -57,9 +56,6 @@ export default async function MediumPage() {
             <div className="p-3">
               <p className="text-sm font-medium leading-snug group-hover:opacity-70 transition-opacity">
                 {medium.label}
-              </p>
-              <p className="text-[10px] text-[var(--muted)] mt-0.5">
-                {medium.count.toLocaleString()} objects
               </p>
             </div>
           </Link>

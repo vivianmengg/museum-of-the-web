@@ -9,31 +9,31 @@ export const MEDIUMS: Medium[] = [
   {
     id: "photography",
     label: "Photography",
-    keywords: ["gelatin silver", "photograph", "daguerreotype", "chromogenic", "albumen", "cyanotype", "ambrotype", "tintype"],
+    keywords: ["gelatin silver", "photograph", "daguerreotype", "chromogenic", "albumen"],
     color: "#6b7280",
   },
   {
     id: "painting",
     label: "Painting",
-    keywords: ["oil on canvas", "oil on panel", "oil on board", "tempera on panel", "tempera on wood", "acrylic on canvas", "encaustic"],
+    keywords: ["oil on canvas", "oil on panel", "tempera on panel", "acrylic on canvas"],
     color: "#b45309",
   },
   {
     id: "works-on-paper",
     label: "Works on Paper",
-    keywords: ["watercolor", "gouache", "ink wash", "brush and ink", "chalk", "pastel"],
+    keywords: ["watercolor", "gouache", "pastel"],
     color: "#0369a1",
   },
   {
     id: "printmaking",
     label: "Printmaking",
-    keywords: ["etching", "lithograph", "woodblock", "woodcut", "engraving", "aquatint", "screenprint", "linocut", "mezzotint"],
+    keywords: ["etching", "woodblock", "lithograph", "woodcut", "engraving"],
     color: "#374151",
   },
   {
     id: "ceramics",
     label: "Ceramics",
-    keywords: ["porcelain", "earthenware", "stoneware", "terracotta", "terra cotta", "faience", "ceramic", "pottery"],
+    keywords: ["porcelain", "earthenware", "stoneware", "faience"],
     color: "#92400e",
   },
   {
@@ -51,25 +51,25 @@ export const MEDIUMS: Medium[] = [
   {
     id: "metalwork",
     label: "Gold & Metalwork",
-    keywords: ["gold", "silver gilt", "gilt copper", "copper alloy", "repoussé", "chased gold", "hammered"],
+    keywords: ["silver gilt", "gilt copper", "repoussé", "copper alloy"],
     color: "#a16207",
   },
   {
     id: "silk",
     label: "Silk & Textile",
-    keywords: ["silk", "textile", "embroidery", "tapestry", "brocade", "damask", "linen", "wool", "satin", "velvet"],
+    keywords: ["silk", "embroidery", "tapestry", "brocade"],
     color: "#7e22ce",
   },
   {
     id: "wood",
     label: "Wood & Lacquer",
-    keywords: ["lacquer", "lacquerware", "wood", "oak", "walnut", "cedar", "boxwood"],
+    keywords: ["lacquer", "lacquerware", "boxwood"],
     color: "#78350f",
   },
   {
     id: "stone",
     label: "Stone & Marble",
-    keywords: ["marble", "limestone", "sandstone", "granite", "basalt", "alabaster", "schist", "serpentine"],
+    keywords: ["marble", "limestone", "sandstone", "alabaster"],
     color: "#9ca3af",
   },
   {

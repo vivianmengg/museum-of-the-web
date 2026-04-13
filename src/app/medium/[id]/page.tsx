@@ -45,10 +45,10 @@ export default async function MediumDetailPage({
 
   const { data: rows } = await supabase
     .from("objects_cache")
-    .select("*")
+    .select("id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin")
     .not("thumbnail_url", "is", null)
     .or(orFilter)
-    .limit(1500);
+    .limit(800);
 
   const objects = (rows ?? []).map(rowToObject);
 
