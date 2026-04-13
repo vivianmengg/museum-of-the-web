@@ -127,7 +127,7 @@ export default function TimelineScrubber({
         <p className="text-xs text-[var(--muted)] shrink-0">
           {window_ === null
             ? `${visibleCount} objects`
-            : `${visibleCount} · ${formatYear(year - window_)} – ${formatYear(year + window_)}`}
+            : `${formatYear(year - window_)} – ${formatYear(year + window_)}`}
         </p>
       </div>
 
