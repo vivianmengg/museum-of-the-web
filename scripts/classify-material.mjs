@@ -43,6 +43,10 @@ function classifyMaterial(medium) {
   if (contains(m, "photograph") && !contains(m, "photogravure", "photolithograph", "photoetching"))
     return "photography";
 
+  // Painting techniques — check early so "encaustic on wood" / "tempera on panel" are paintings, not wood
+  if (contains(m, "encaustic", "tempera", "fresco", "oil on canvas", "oil on panel", "oil on copper", "oil on board", "acrylic on canvas", "acrylic on panel", "egg tempera", "casein"))
+    return "painting";
+
   // Posters (before prints — many posters are lithographs)
   if (contains(m, "poster", "broadside"))
     return "posters";
@@ -82,10 +86,6 @@ function classifyMaterial(medium) {
   // Stone & Marble
   if (contains(m, "marble", "limestone", "sandstone", "alabaster", "granite", "basalt", "porphyry", "schist", "quartzite", "obsidian", "serpentine", "steatite", "stone", "rock crystal"))
     return "stone";
-
-  // Painting (before drawing — "oil on" is unambiguous)
-  if (contains(m, "oil on canvas", "oil on panel", "oil on copper", "oil on board", "tempera", "fresco", "encaustic", "acrylic on canvas", "acrylic on panel", "egg tempera", "casein"))
-    return "painting";
 
   // Drawing (unique works on paper)
   if (contains(m, "watercolor", "gouache", "pastel", "chalk", "charcoal", "ink on paper", "brush and ink", "pen and ink", "colored pencil", "graphite", "pencil"))
