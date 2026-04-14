@@ -16,6 +16,7 @@ type CloudExhibit = {
   id: string;
   title: string;
   objectCount: number;
+  maxPosition: number;
   thumbnails: string[];
   hasObject: boolean;
 };
@@ -82,10 +83,12 @@ export default function ExhibitPicker({ object, onClose }: Props) {
       const objs = exhibitObjs[i];
       const previewIds = objs.slice(0, 2).map((o: { object_id: string }) => o.object_id);
       const thumbnails = previewIds.flatMap((id: string) => thumbMap[id] ? [thumbMap[id]] : []);
+      const maxPosition = objs.length > 0 ? Math.max(...objs.map((o: { position: number }) => o.position)) : -1;
       return {
         id: e.id,
         title: e.title,
         objectCount: objs.length,
+        maxPosition,
         thumbnails,
         hasObject: objs.some((o: { object_id: string }) => o.object_id === object.id),
       };
@@ -128,7 +131,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
         .eq("object_id", object.id);
       if (error) { console.error("delete error", error); return; }
     } else {
-      const pos = cloudExhibits.find((e) => e.id === exhibit.id)?.objectCount ?? 0;
+      const pos = (cloudExhibits.find((e) => e.id === exhibit.id)?.maxPosition ?? -1) + 1;
       const { error } = await supabase.from("exhibit_objects").insert({
         exhibit_id: exhibit.id,
         object_id: object.id,

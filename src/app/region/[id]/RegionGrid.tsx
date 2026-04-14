@@ -25,8 +25,8 @@ export default function RegionGrid({
     [objects, yearMap]
   );
 
-  const minYear = minYearProp ?? (years.length ? Math.min(...years) : -3000);
-  const maxYear = maxYearProp ?? (years.length ? Math.max(...years) : 2026);
+  const minYear = minYearProp ?? (years.length ? Math.max(Math.min(...years), -7000) : -3000);
+  const maxYear = maxYearProp ?? (years.length ? Math.min(Math.max(...years), 2026) : 2026);
   const midYear = Math.round((minYear + maxYear) / 2);
 
   const [year, setYear]           = useState(midYear);
