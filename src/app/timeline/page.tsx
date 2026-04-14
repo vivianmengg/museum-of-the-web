@@ -131,6 +131,7 @@ export default async function TimelinePage() {
     .not("thumbnail_url", "is", null)
     .not("year_begin", "is", null)
     .neq("institution", "harvard")
+    .neq("institution", "colbase")
     .gte("year_begin", -7000)
     .lte("year_begin",  2026)
     .order("year_begin")
@@ -152,6 +153,7 @@ export default async function TimelinePage() {
     .select("*")
     .not("thumbnail_url", "is", null)
     .neq("institution", "harvard")
+    .neq("institution", "colbase")
     .is("year_begin", null)
     .neq("date", "")
     .limit(2000);

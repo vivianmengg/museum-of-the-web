@@ -5,6 +5,8 @@ create table public.users (
   id uuid references auth.users(id) on delete cascade primary key,
   username text unique not null,
   avatar_url text,
+  is_anonymous boolean default false not null,
+  onboarded boolean default false not null,
   created_at timestamptz default now() not null
 );
 alter table public.users enable row level security;

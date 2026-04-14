@@ -100,7 +100,7 @@ export default async function ExplorePage() {
 
   const artifactIds = sorted.map((r) => r.object_id);
   const { data: artifactRows } = artifactIds.length
-    ? await supabase.from("objects_cache").select("*").in("id", artifactIds)
+    ? await supabase.from("objects_cache").select("*").in("id", artifactIds).neq("institution", "colbase")
     : { data: [] };
   const artifactCacheMap = new Map((artifactRows ?? []).map((r) => [r.id, r]));
 
