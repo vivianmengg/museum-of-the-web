@@ -37,7 +37,7 @@ function classifyMaterial(medium) {
   const m = (medium || "").toLowerCase();
 
   // Photography (most distinctive — check first)
-  if (contains(m, "gelatin silver", "silver gelatin", "silver-gelatin", "silver dye bleach", "dye bleach", "dye transfer", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "palladium print", "platinum print", "calotype"))
+  if (contains(m, "gelatin silver", "silver gelatin", "silver-gelatin", "silver dye bleach", "dye bleach", "dye transfer", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "palladium print", "platinum print", "calotype", "salted paper"))
     return "photography";
   // "photograph" but NOT photogravure/photolithograph (those are print techniques)
   if (contains(m, "photograph") && !contains(m, "photogravure", "photolithograph", "photoetching"))
@@ -60,7 +60,7 @@ function classifyMaterial(medium) {
     return "jade";
 
   // Ceramics (before metals — "porcelain with gold" is ceramics, not metalwork)
-  if (contains(m, "porcelain", "earthenware", "stoneware", "faience", "terracotta", "terra cotta", "ceramic", "pottery", "majolica", "maiolica", "tin-glazed", "celadon", "sancai", "delftware", "creamware", "pearlware"))
+  if (contains(m, "porcelain", "earthenware", "stoneware", "faience", "fritware", "terracotta", "terra cotta", "ceramic", "pottery", "majolica", "maiolica", "tin-glazed", "celadon", "sancai", "delftware", "creamware", "pearlware"))
     return "ceramics";
 
   // Glass (before metals — "glass with gilt" is glass)
@@ -84,11 +84,11 @@ function classifyMaterial(medium) {
     return "wood";
 
   // Stone & Marble
-  if (contains(m, "marble", "limestone", "sandstone", "alabaster", "granite", "basalt", "porphyry", "schist", "quartzite", "obsidian", "serpentine", "steatite", "stone", "rock crystal"))
+  if (contains(m, "marble", "limestone", "sandstone", "alabaster", "granite", "basalt", "porphyry", "schist", "quartzite", "obsidian", "serpentine", "steatite", "chalcedony", "gypsum", "stone", "rock crystal"))
     return "stone";
 
   // Drawing (unique works on paper)
-  if (contains(m, "watercolor", "gouache", "pastel", "chalk", "charcoal", "ink on paper", "brush and ink", "pen and ink", "colored pencil", "graphite", "pencil"))
+  if (contains(m, "watercolor", "gouache", "pastel", "chalk", "charcoal", "ink on paper", "ink on", "brush and ink", "pen and ink", "pen and brown ink", "pen and black ink", "colored pencil", "graphite", "pencil"))
     return "drawing";
 
   return null; // unclassified
