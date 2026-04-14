@@ -32,6 +32,11 @@ function contains(str, ...terms) {
   return terms.some((t) => s.includes(t.toLowerCase()));
 }
 
+// Word-boundary match — use for short terms that are substrings of unrelated words (e.g. "dan" in "danish")
+function containsWord(str, ...terms) {
+  return terms.some((t) => new RegExp(`\\b${t}\\b`, "i").test(str));
+}
+
 function classify(row) {
   const dept    = (row.department || "").toLowerCase();
   const culture = (row.culture    || "").toLowerCase();
@@ -63,11 +68,13 @@ function classify(row) {
     return { continent: "africa", country: "Mali" };
 
   // West Africa – Côte d'Ivoire
-  if (contains(culture, "senufo", "baule", "baulé", "dan", "guro", "lobi", "baga") && !contains(culture, "sudan", "jordan", "andean"))
+  // Use containsWord for "dan" to avoid matching "danish", "scandinavian", etc.
+  if ((contains(culture, "senufo", "baule", "baulé", "guro", "lobi", "baga") || containsWord(culture, "dan")) && !contains(culture, "sudan", "jordan", "andean"))
     return { continent: "africa", country: "Côte d'Ivoire" };
 
   // West Africa – Benin (country)
-  if (contains(culture, "fon", "fon-ewe", "ewe") && !contains(culture, "edo"))
+  // Use containsWord for "fon"/"ewe" to avoid matching "Fontainebleau", etc.
+  if ((containsWord(culture, "fon", "ewe") || contains(culture, "fon-ewe")) && !contains(culture, "edo"))
     return { continent: "africa", country: "Benin" };
 
   // West Africa – Cameroon / Gabon
