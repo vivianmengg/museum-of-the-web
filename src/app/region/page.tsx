@@ -1,89 +1,59 @@
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
-import { CIVILIZATIONS, matchesCiv } from "@/app/timeline/page";
+import { REGIONS } from "@/lib/regions";
 
 export const revalidate = 3600;
 
-async function fetchCivThumbnail(civId: string): Promise<string | null> {
-  const civ = CIVILIZATIONS.find((c) => c.id === civId);
-  if (!civ) return null;
+async function fetchRegionPreviews() {
   const supabase = createStaticClient();
 
-  const deptFilter = civ.deptMatch[0];
-  let query = supabase
-    .from("objects_cache")
-    .select("thumbnail_url, department, culture")
-    .not("thumbnail_url", "is", null)
-    .ilike("department", `%${deptFilter}%`)
-    .limit(50);
+  const results = [];
+  for (const region of REGIONS) {
+    const { data } = await supabase
+      .from("objects_cache")
+      .select("thumbnail_url")
+      .eq("continent", region.id)
+      .not("thumbnail_url", "is", null)
+      .limit(1);
 
-  if (civ.cultureMatch) {
-    query = query.ilike("culture", `%${civ.cultureMatch[0]}%`);
+    results.push({
+      ...region,
+      thumbnail: data?.[0]?.thumbnail_url ?? null,
+    });
   }
-
-  const { data } = await query;
-  if (!data) return null;
-
-  const match = data.find((r) =>
-    matchesCiv(r as Record<string, unknown>, civ)
-  );
-  return match?.thumbnail_url ?? data[0]?.thumbnail_url ?? null;
+  return results;
 }
 
 export default async function RegionPage() {
-  const thumbnails = await Promise.all(
-    CIVILIZATIONS.map(async (civ) => ({
-      civ,
-      thumbnail: await fetchCivThumbnail(civ.id),
-    }))
-  );
-
-  // Group by the `group` field, preserving insertion order
-  const groups: { name: string; items: typeof thumbnails }[] = [];
-  for (const item of thumbnails) {
-    const groupName = item.civ.group ?? "Other";
-    const existing = groups.find((g) => g.name === groupName);
-    if (existing) {
-      existing.items.push(item);
-    } else {
-      groups.push({ name: groupName, items: [item] });
-    }
-  }
+  const regions = await fetchRegionPreviews();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
       <h1 className="font-serif italic text-3xl sm:text-4xl mb-2">Browse by region</h1>
       <p className="text-sm text-[var(--muted)] mb-10">Explore art and artifacts from civilizations across time.</p>
 
-      <div className="space-y-10">
-        {groups.map(({ name, items }) => (
-          <section key={name}>
-            <h2 className="text-xs font-medium tracking-widest uppercase text-[var(--muted)] mb-4">{name}</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-              {items.map(({ civ, thumbnail }) => (
-                <Link
-                  key={civ.id}
-                  href={`/region/${civ.id}`}
-                  className="group relative aspect-square overflow-hidden rounded-lg border border-[var(--border)] hover:border-[var(--muted)] transition-colors"
-                >
-                  {thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={thumbnail}
-                      alt={civ.label}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full" style={{ backgroundColor: civ.color + "33" }} />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-white text-sm font-medium leading-snug">{civ.label}</p>
-                  </div>
-                </Link>
-              ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+        {regions.map(({ id, label, color, thumbnail }) => (
+          <Link
+            key={id}
+            href={`/region/${id}`}
+            className="group relative aspect-square overflow-hidden rounded-lg border border-[var(--border)] hover:border-[var(--muted)] transition-colors"
+          >
+            {thumbnail ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={thumbnail}
+                alt={label}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div className="w-full h-full" style={{ backgroundColor: color + "33" }} />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <p className="text-white text-sm font-medium leading-snug">{label}</p>
             </div>
-          </section>
+          </Link>
         ))}
       </div>
     </div>

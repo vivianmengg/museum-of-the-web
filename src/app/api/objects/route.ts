@@ -11,6 +11,12 @@ function normalize(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 40);
 }
 
+const FRAGMENT_TERMS = ["fragment", "sherd", "shard", "potsherd"];
+function isFragment(obj: MuseumObject): boolean {
+  const t = obj.title.toLowerCase();
+  return FRAGMENT_TERMS.some((term) => t.includes(term));
+}
+
 function interleaveDeduped(...arrays: MuseumObject[][]): MuseumObject[] {
   const out: MuseumObject[] = [];
   const seen = new Set<string>();
@@ -54,11 +60,11 @@ export async function GET(request: NextRequest) {
     // Equal quota per source — each contributes at most 5 objects per page
     const Q = 5;
     const objects = interleaveDeduped(
-      met.objects.slice(0, Q),
-      aic.objects.slice(0, Q),
-      rijks.objects.slice(0, Q),
-      moma.objects.slice(0, Q),
-      seeded.objects.slice(0, Q),
+      met.objects.filter((o) => !isFragment(o)).slice(0, Q),
+      aic.objects.filter((o) => !isFragment(o)).slice(0, Q),
+      rijks.objects.filter((o) => !isFragment(o)).slice(0, Q),
+      moma.objects.filter((o) => !isFragment(o)).slice(0, Q),
+      seeded.objects.filter((o) => !isFragment(o)).slice(0, Q),
     );
     const total = met.total + aic.total + rijks.total + moma.total + seeded.total;
 

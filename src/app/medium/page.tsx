@@ -8,15 +8,13 @@ export const revalidate = 3600;
 async function getMediumPreviews() {
   const supabase = createStaticClient();
 
-  // Run sequentially — 12 parallel ilike full-table scans overwhelm the DB
   const results = [];
   for (const medium of MEDIUMS) {
-    const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
     const { data, error } = await supabase
       .from("objects_cache")
       .select("id, thumbnail_url")
+      .eq("material", medium.id)
       .not("thumbnail_url", "is", null)
-      .or(orFilter)
       .limit(4);
 
     if (error) console.error(`medium preview ${medium.id}:`, error.message);

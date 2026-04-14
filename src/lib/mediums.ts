@@ -8,27 +8,33 @@ export type Medium = {
 export const MEDIUMS: Medium[] = [
   {
     id: "photography",
-    label: "Photography",
-    keywords: ["gelatin silver", "photograph", "daguerreotype", "chromogenic", "albumen"],
+    label: "Photographs",
+    keywords: ["gelatin silver", "photograph", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "photogravure", "platinum print", "palladium print"],
     color: "#6b7280",
   },
   {
     id: "painting",
     label: "Painting",
-    keywords: ["oil on canvas", "oil on panel", "tempera on panel", "acrylic on canvas"],
+    keywords: ["oil on canvas", "oil on panel", "oil on board", "oil on copper", "tempera on panel", "tempera on canvas", "acrylic on canvas", "acrylic on panel", "egg tempera", "encaustic", "fresco"],
     color: "#b45309",
   },
   {
-    id: "works-on-paper",
-    label: "Works on Paper",
-    keywords: ["watercolor", "gouache", "pastel"],
+    id: "drawing",
+    label: "Drawing",
+    keywords: ["watercolor", "gouache", "pastel", "chalk", "charcoal", "pen and ink", "brush and ink", "ink on paper", "graphite", "pencil", "colored pencil"],
     color: "#0369a1",
   },
   {
-    id: "printmaking",
-    label: "Printmaking",
-    keywords: ["etching", "woodblock", "lithograph", "woodcut", "engraving"],
+    id: "prints",
+    label: "Prints",
+    keywords: ["etching", "woodblock", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "intaglio", "monotype"],
     color: "#374151",
+  },
+  {
+    id: "posters",
+    label: "Posters",
+    keywords: ["poster", "broadside"],
+    color: "#1d4ed8",
   },
   {
     id: "ceramics",
@@ -44,14 +50,14 @@ export const MEDIUMS: Medium[] = [
   },
   {
     id: "bronze",
-    label: "Bronze",
-    keywords: ["bronze"],
+    label: "Bronze & Copper",
+    keywords: ["bronze", "copper", "brass", "copper alloy"],
     color: "#854d0e",
   },
   {
     id: "metalwork",
-    label: "Gold & Metalwork",
-    keywords: ["silver gilt", "gilt copper", "repoussé", "copper alloy"],
+    label: "Gold & Silver",
+    keywords: ["gold", "silver", "gilt", "niello", "filigree", "repoussé"],
     color: "#a16207",
   },
   {

@@ -40,22 +40,28 @@ export default async function MediumDetailPage({
   const medium = MEDIUMS.find((m) => m.id === id);
   if (!medium) notFound();
 
-  const supabase = createStaticClient();
-  const orFilter = medium.keywords.map((k) => `medium.ilike.%${k}%`).join(",");
+  const supabase = createAdminClient();
+  const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
 
-  const { data: rows, error: rowsError } = await supabase
-    .from("objects_cache")
-    .select("id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin")
-    .not("thumbnail_url", "is", null)
-    .or(orFilter)
-    .limit(800);
+  const PAGE = 1000;
+  const allRows: Record<string, unknown>[] = [];
+  for (let page = 0; ; page++) {
+    const { data, error } = await supabase
+      .from("objects_cache")
+      .select(COLS)
+      .not("thumbnail_url", "is", null)
+      .eq("material", id)
+      .range(page * PAGE, (page + 1) * PAGE - 1);
+    if (error) { console.error(`medium ${id} page ${page}:`, error.message); break; }
+    if (!data || data.length === 0) break;
+    allRows.push(...(data as Record<string, unknown>[]));
+    if (data.length < PAGE) break;
+  }
 
-  if (rowsError) console.error(`medium detail ${id}:`, rowsError.message);
-
-  const objects = (rows ?? []).map(rowToObject);
+  const objects = allRows.map(rowToObject);
 
   const yearMap: Record<string, number> = {};
-  for (const r of rows ?? []) {
+  for (const r of allRows) {
     if (r.id && typeof r.year_begin === "number") {
       yearMap[r.id as string] = r.year_begin as number;
     }

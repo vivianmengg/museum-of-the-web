@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
-import { CIVILIZATIONS, matchesCiv } from "@/app/timeline/page";
+import { REGIONS } from "@/lib/regions";
 import type { MuseumObject } from "@/types";
 import RegionGrid from "./RegionGrid";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  return CIVILIZATIONS.map((c) => ({ id: c.id }));
+  return REGIONS.map((r) => ({ id: r.id }));
 }
 
 function rowToObject(row: Record<string, unknown>): MuseumObject {
@@ -37,45 +37,29 @@ export default async function RegionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const civ = CIVILIZATIONS.find((c) => c.id === id);
-  if (!civ) notFound();
+  const region = REGIONS.find((r) => r.id === id);
+  if (!region) notFound();
 
   const supabase = createStaticClient();
+  const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin, country";
 
-  const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
-
-  let query = supabase
-    .from("objects_cache")
-    .select(COLS)
-    .not("thumbnail_url", "is", null);
-
-  // Department filter — use .ilike() for single-entry deptMatch to avoid the
-  // PostgREST .or() parser splitting on commas inside values like "Africa, Oceania".
-  if (civ.deptMatch.length === 1) {
-    query = query.ilike("department", `%${civ.deptMatch[0]}%`);
-  } else {
-    query = query.or(civ.deptMatch.map((d) => `department.ilike.%${d}%`).join(","));
-  }
-
-  // Culture filter — narrow to this specific civilisation when it shares a
-  // department with others (e.g. all of Asian Art).
-  if (civ.cultureMatch && civ.cultureMatch.length > 0) {
-    query = query.or(civ.cultureMatch.map((c) => `culture.ilike.%${c}%`).join(","));
-  }
-
-  // Paginate to get everything regardless of PostgREST max_rows setting.
   const PAGE = 1000;
   const allRows: Record<string, unknown>[] = [];
   for (let page = 0; ; page++) {
-    const { data, error } = await query.range(page * PAGE, (page + 1) * PAGE - 1);
+    const { data, error } = await supabase
+      .from("objects_cache")
+      .select(COLS)
+      .not("thumbnail_url", "is", null)
+      .eq("continent", id)
+      .range(page * PAGE, (page + 1) * PAGE - 1);
     if (error) { console.error(`region ${id} page ${page}:`, error.message); break; }
     if (!data || data.length === 0) break;
     allRows.push(...(data as Record<string, unknown>[]));
     if (data.length < PAGE) break;
   }
-  const matched = allRows.filter((r) => matchesCiv(r, civ)).map(rowToObject);
 
-  // Build year map for client-side scrubber
+  const objects = allRows.map(rowToObject);
+
   const yearMap: Record<string, number> = {};
   for (const r of allRows) {
     if (r.id && typeof r.year_begin === "number") {
@@ -93,15 +77,15 @@ export default async function RegionDetailPage({
           ← All regions
         </Link>
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: civ.color }} />
-          <h1 className="font-serif italic text-3xl sm:text-4xl">{civ.label}</h1>
+          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: region.color }} />
+          <h1 className="font-serif italic text-3xl sm:text-4xl">{region.label}</h1>
         </div>
         <p className="text-sm text-[var(--muted)] mt-2 ml-6">
-          {matched.length.toLocaleString()} objects
+          {objects.length.toLocaleString()} objects
         </p>
       </div>
 
-      <RegionGrid objects={matched} color={civ.color} yearMap={yearMap} />
+      <RegionGrid objects={objects} color={region.color} yearMap={yearMap} />
     </div>
   );
 }
