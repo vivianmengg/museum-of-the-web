@@ -48,11 +48,11 @@ function deriveScale(span: number): {
   return {
     presets: [
       { label: "±10 yr",  value: 10  },
-      { label: "±20 yr",  value: 20  },
+      { label: "±25 yr",  value: 25  },
       { label: "±50 yr",  value: 50  },
       { label: "±100 yr", value: 100 },
     ],
-    defaultWindow: 20,
+    defaultWindow: 25,
     tickInterval: 20,
   };
 }
