@@ -52,6 +52,7 @@ export default async function MediumDetailPage({
       .select(COLS)
       .not("thumbnail_url", "is", null)
       .eq("material", id)
+      .order("id")
       .range(page * PAGE, (page + 1) * PAGE - 1);
     if (error) { console.error(`medium ${id} page ${page}:`, error.message); break; }
     if (!data || data.length === 0) break;

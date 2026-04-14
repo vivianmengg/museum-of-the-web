@@ -68,7 +68,7 @@ export default async function RegionDetailPage({
       query = query.eq("continent", country.continent).eq("country", country.dbValue);
     }
 
-    query = query.range(page * PAGE, (page + 1) * PAGE - 1);
+    query = query.order("id").range(page * PAGE, (page + 1) * PAGE - 1);
 
     const { data, error } = await query;
     if (error) { console.error(`region ${id} page ${page}:`, error.message); break; }
