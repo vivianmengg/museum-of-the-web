@@ -89,7 +89,13 @@ export default async function MediumDetailPage({
         </p>
       </div>
 
-      <RegionGrid objects={objects} color={medium.color} yearMap={yearMap} />
+      <RegionGrid
+        objects={objects}
+        color={medium.color}
+        yearMap={yearMap}
+        minYear={id === "photography" ? 1750 : undefined}
+        maxYear={id === "photography" ? new Date().getFullYear() : undefined}
+      />
     </div>
   );
 }
