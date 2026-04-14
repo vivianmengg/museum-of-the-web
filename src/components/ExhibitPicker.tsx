@@ -57,31 +57,34 @@ export default function ExhibitPicker({ object, onClose }: Props) {
 
     if (!exhibits) return;
 
-    const result: CloudExhibit[] = await Promise.all(
-      exhibits.map(async (e) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const objs = (e.exhibit_objects as any[]).sort((a, b) => a.position - b.position);
-        const previewIds = objs.slice(0, 2).map((o) => o.object_id);
-        const thumbnails: string[] = [];
-        if (previewIds.length > 0) {
-          const { data: rows } = await supabase
-            .from("objects_cache")
-            .select("id, thumbnail_url")
-            .in("id", previewIds);
-          previewIds.forEach((id) => {
-            const row = rows?.find((r) => r.id === id);
-            if (row?.thumbnail_url) thumbnails.push(row.thumbnail_url);
-          });
-        }
-        return {
-          id: e.id,
-          title: e.title,
-          objectCount: objs.length,
-          thumbnails,
-          hasObject: objs.some((o) => o.object_id === object.id),
-        };
-      })
-    );
+    // Collect all preview IDs in one pass, then fetch thumbnails in a single query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const exhibitObjs = exhibits.map((e) => (e.exhibit_objects as any[]).sort((a, b) => a.position - b.position));
+    const allPreviewIds = [...new Set(exhibitObjs.flatMap((objs) => objs.slice(0, 2).map((o: { object_id: string }) => o.object_id)))];
+
+    const thumbMap: Record<string, string> = {};
+    if (allPreviewIds.length > 0) {
+      const { data: rows } = await supabase
+        .from("objects_cache")
+        .select("id, thumbnail_url")
+        .in("id", allPreviewIds);
+      for (const row of rows ?? []) {
+        if (row.thumbnail_url) thumbMap[row.id] = row.thumbnail_url;
+      }
+    }
+
+    const result: CloudExhibit[] = exhibits.map((e, i) => {
+      const objs = exhibitObjs[i];
+      const previewIds = objs.slice(0, 2).map((o: { object_id: string }) => o.object_id);
+      const thumbnails = previewIds.flatMap((id: string) => thumbMap[id] ? [thumbMap[id]] : []);
+      return {
+        id: e.id,
+        title: e.title,
+        objectCount: objs.length,
+        thumbnails,
+        hasObject: objs.some((o: { object_id: string }) => o.object_id === object.id),
+      };
+    });
     setCloudExhibits(result);
   }, [object.id]);
 
