@@ -93,8 +93,8 @@ export default async function MediumDetailPage({
         objects={objects}
         color={medium.color}
         yearMap={yearMap}
-        minYear={id === "photography" ? 1750 : undefined}
-        maxYear={id === "photography" ? new Date().getFullYear() : undefined}
+        minYear={id === "photography" ? 1800 : undefined}
+        maxYear={id === "photography" ? 2026 : undefined}
       />
     </div>
   );
