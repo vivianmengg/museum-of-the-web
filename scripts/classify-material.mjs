@@ -37,7 +37,10 @@ function classifyMaterial(medium) {
   const m = (medium || "").toLowerCase();
 
   // Photography (most distinctive — check first)
-  if (contains(m, "gelatin silver", "silver gelatin", "silver-gelatin", "silver dye bleach", "dye bleach", "dye transfer", "photograph", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "photogravure", "heliogravure", "palladium print", "platinum print", "calotype"))
+  if (contains(m, "gelatin silver", "silver gelatin", "silver-gelatin", "silver dye bleach", "dye bleach", "dye transfer", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "palladium print", "platinum print", "calotype"))
+    return "photography";
+  // "photograph" but NOT photogravure/photolithograph (those are print techniques)
+  if (contains(m, "photograph") && !contains(m, "photogravure", "photolithograph", "photoetching"))
     return "photography";
 
   // Posters (before prints — many posters are lithographs)
@@ -45,7 +48,7 @@ function classifyMaterial(medium) {
     return "posters";
 
   // Prints (process-based — check before precious metals so "etching with gold leaf" is a print, not metalwork)
-  if (contains(m, "etching", "woodblock", "letterpress", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio", "chine collé", "chine-collé"))
+  if (contains(m, "etching", "woodblock", "letterpress", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio", "chine collé", "chine-collé", "photogravure", "heliogravure", "photoetching", "photolithograph"))
     return "prints";
 
   // Jade (before stone — jade is a mineral but curators treat it separately)
