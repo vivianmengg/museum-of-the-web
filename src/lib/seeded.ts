@@ -1,15 +1,15 @@
 // Fetch page from any institution that lives entirely in Supabase cache.
-// Used for: cleveland, harvard, smithsonian, colbase, getty, brooklyn (post-seed)
+// Used for: cleveland, smithsonian, colbase, getty, princeton (harvard excluded — less curated)
 import type { MuseumObject } from "@/types";
 import type { BrowseFilters } from "./constants";
 import { createStaticClient } from "@/lib/supabase/static";
 
 export const SEEDED_PAGE_SIZE = 5;
 
-type SeededInstitution = "cleveland" | "harvard" | "smithsonian" | "colbase" | "getty" | "princeton";
+type SeededInstitution = "cleveland" | "smithsonian" | "colbase" | "getty" | "princeton";
 
 const INSTITUTIONS: SeededInstitution[] = [
-  "cleveland", "harvard", "smithsonian", "colbase", "getty", "princeton",
+  "cleveland", "smithsonian", "colbase", "getty", "princeton",
 ];
 
 function dailyStart(institution: string, total: number): number {
