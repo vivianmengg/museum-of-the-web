@@ -44,6 +44,10 @@ function classifyMaterial(medium) {
   if (contains(m, "poster", "broadside"))
     return "posters";
 
+  // Prints (process-based — check before precious metals so "etching with gold leaf" is a print, not metalwork)
+  if (contains(m, "etching", "woodblock", "letterpress", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio", "chine collé", "chine-collé"))
+    return "prints";
+
   // Jade (before stone — jade is a mineral but curators treat it separately)
   if (contains(m, "jade", "nephrite", "jadeite"))
     return "jade";
@@ -79,10 +83,6 @@ function classifyMaterial(medium) {
   // Painting (before drawing — "oil on" is unambiguous)
   if (contains(m, "oil on canvas", "oil on panel", "oil on copper", "oil on board", "tempera", "fresco", "encaustic", "acrylic on canvas", "acrylic on panel", "egg tempera", "casein"))
     return "painting";
-
-  // Prints (multiples from a matrix)
-  if (contains(m, "etching", "woodblock", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio"))
-    return "prints";
 
   // Drawing (unique works on paper)
   if (contains(m, "watercolor", "gouache", "pastel", "chalk", "charcoal", "ink on paper", "brush and ink", "pen and ink", "colored pencil", "graphite", "pencil"))
