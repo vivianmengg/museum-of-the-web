@@ -37,7 +37,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setSignedIn(true);
-        loadCloudExhibits().finally(() => setLoading(false));
+        loadCloudExhibits(data.user.id).finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
@@ -45,14 +45,19 @@ export default function ExhibitPicker({ object, onClose }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadCloudExhibits = useCallback(async () => {
+  const loadCloudExhibits = useCallback(async (userId?: string) => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // Use passed userId if available to avoid a second getUser() round trip
+    let uid = userId;
+    if (!uid) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      uid = user.id;
+    }
     const { data: exhibits } = await supabase
       .from("exhibits")
       .select("id, title, exhibit_objects(object_id, position)")
-      .eq("user_id", user.id)
+      .eq("user_id", uid)
       .order("created_at", { ascending: false });
 
     if (!exhibits) return;
