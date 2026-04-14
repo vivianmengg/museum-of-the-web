@@ -40,7 +40,7 @@ export default async function MediumDetailPage({
   const medium = MEDIUMS.find((m) => m.id === id);
   if (!medium) notFound();
 
-  const supabase = createAdminClient();
+  const supabase = createStaticClient();
   const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
 
   const PAGE = 1000;
