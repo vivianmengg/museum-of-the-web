@@ -44,7 +44,7 @@ export default async function MediumDetailPage({
   const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
 
   const PAGE = 1000;
-  const MAX = 2000;
+  const MAX = 5000;
   const allRows: Record<string, unknown>[] = [];
   for (let page = 0; allRows.length < MAX; page++) {
     const { data, error } = await supabase

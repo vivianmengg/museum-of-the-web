@@ -50,7 +50,7 @@ export default async function RegionDetailPage({
 
   const supabase = createStaticClient();
   const PAGE = 1000;
-  const MAX = 2000;
+  const MAX = 5000;
   const allRows: Record<string, unknown>[] = [];
 
   for (let page = 0; allRows.length < MAX; page++) {
