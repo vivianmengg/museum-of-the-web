@@ -20,20 +20,20 @@ function rowToObject(row: Record<string, unknown>): MuseumObject {
     title: (row.title as string) || "Untitled",
     date: (row.date as string) || "",
     culture: (row.culture as string) || "",
-    medium: (row.medium as string) || "",
+    medium: "",
     imageUrl: (row.image_url as string | null) || null,
     thumbnailUrl: (row.thumbnail_url as string | null) || null,
     imageWidth: (row.image_width as number) || 4,
     imageHeight: (row.image_height as number) || 3,
-    department: (row.department as string) || "",
-    artistName: (row.artist_name as string) || "",
-    creditLine: (row.credit_line as string) || "",
-    dimensions: (row.dimensions as string) || "",
-    objectUrl: (row.object_url as string | null) || null,
+    department: "",
+    artistName: "",
+    creditLine: "",
+    dimensions: "",
+    objectUrl: null,
   };
 }
 
-const COLS = "id, institution, title, date, culture, medium, image_url, thumbnail_url, image_width, image_height, department, artist_name, credit_line, dimensions, object_url, year_begin";
+const COLS = "id, institution, title, date, culture, image_url, thumbnail_url, image_width, image_height, year_begin";
 
 export default async function RegionDetailPage({
   params,
