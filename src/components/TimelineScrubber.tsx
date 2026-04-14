@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef } from "react";
 
 function formatYear(y: number): string {
   const abs = Math.abs(Math.round(y));
@@ -9,14 +9,53 @@ function formatYear(y: number): string {
   return `${abs} CE`;
 }
 
-const WINDOW_PRESETS: { label: string; value: number }[] = [
-  { label: "±50 yr",  value: 50   },
-  { label: "±150 yr", value: 150  },
-  { label: "±300 yr", value: 300  },
-  { label: "±500 yr", value: 500  },
-];
-
-const DEFAULT_WINDOW = 150;
+// Derive window presets and tick interval from the data span
+function deriveScale(span: number): {
+  presets: { label: string; value: number }[];
+  defaultWindow: number;
+  tickInterval: number;
+} {
+  if (span > 5000) return {
+    presets: [
+      { label: "±500 yr",  value: 500  },
+      { label: "±1000 yr", value: 1000 },
+      { label: "±2000 yr", value: 2000 },
+      { label: "±5000 yr", value: 5000 },
+    ],
+    defaultWindow: 500,
+    tickInterval: 2000,
+  };
+  if (span > 1000) return {
+    presets: [
+      { label: "±100 yr", value: 100 },
+      { label: "±200 yr", value: 200 },
+      { label: "±500 yr", value: 500 },
+    ],
+    defaultWindow: 150,
+    tickInterval: span > 2000 ? 500 : 200,
+  };
+  if (span > 200) return {
+    presets: [
+      { label: "±25 yr",  value: 25  },
+      { label: "±50 yr",  value: 50  },
+      { label: "±100 yr", value: 100 },
+      { label: "±200 yr", value: 200 },
+    ],
+    defaultWindow: 50,
+    tickInterval: 100,
+  };
+  // Short span (e.g. photography ~200 years)
+  return {
+    presets: [
+      { label: "±10 yr",  value: 10  },
+      { label: "±20 yr",  value: 20  },
+      { label: "±50 yr",  value: 50  },
+      { label: "±100 yr", value: 100 },
+    ],
+    defaultWindow: 20,
+    tickInterval: 20,
+  };
+}
 
 interface Props {
   years: number[];
@@ -43,16 +82,22 @@ export default function TimelineScrubber({
   const end   = endProp   ?? (years.length ? Math.max(...years) : 2026);
   const range = end - start || 1;
 
-  const trackRef   = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
+  const { presets, defaultWindow, tickInterval } = deriveScale(end - start);
 
-  // Keep mutable values in refs so callbacks never go stale
-  const startRef  = useRef(start);
-  const rangeRef  = useRef(range);
-  const windowRef = useRef(window_);
-  startRef.current  = start;
-  rangeRef.current  = range;
-  windowRef.current = window_;
+  const trackRef    = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+
+  // Keep latest callbacks + state in refs so pointer handlers never go stale
+  const startRef        = useRef(start);
+  const rangeRef        = useRef(range);
+  const windowRef       = useRef(window_);
+  const onYearChangeRef = useRef(onYearChange);
+  const onWindowChangeRef = useRef(onWindowChange);
+  startRef.current          = start;
+  rangeRef.current          = range;
+  windowRef.current         = window_;
+  onYearChangeRef.current   = onYearChange;
+  onWindowChangeRef.current = onWindowChange;
 
   // Density sparkline
   const BUCKETS = 200;
@@ -72,28 +117,27 @@ export default function TimelineScrubber({
     return Math.round(startRef.current + pct * rangeRef.current);
   }
 
-  const onPointerDown = useCallback((e: React.PointerEvent) => {
+  function onPointerDown(e: React.PointerEvent) {
     e.currentTarget.setPointerCapture(e.pointerId);
-    setDragging(true);
+    draggingRef.current = true;
     const newYear = yearFromPointer(e.clientX);
-    onYearChange(newYear);
-    // If currently in All mode, activate a default window on click
+    onYearChangeRef.current(newYear);
     if (windowRef.current === null) {
-      onWindowChange(DEFAULT_WINDOW);
+      onWindowChangeRef.current(defaultWindow);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
-  const onPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging) return;
-    onYearChange(yearFromPointer(e.clientX));
-  }, [dragging]); // eslint-disable-line react-hooks/exhaustive-deps
+  function onPointerMove(e: React.PointerEvent) {
+    if (!draggingRef.current) return;
+    onYearChangeRef.current(yearFromPointer(e.clientX));
+  }
 
-  const onPointerUp = useCallback(() => setDragging(false), []);
+  function onPointerUp() {
+    draggingRef.current = false;
+  }
 
   // Tick marks
-  const span         = end - start;
-  const tickInterval = span > 5000 ? 2000 : span > 2000 ? 500 : span > 1000 ? 200 : 100;
-  const firstTick    = Math.ceil(start / tickInterval) * tickInterval;
+  const firstTick = Math.ceil(start / tickInterval) * tickInterval;
   const ticks: number[] = [];
   for (let t = firstTick; t <= end; t += tickInterval) ticks.push(t);
 
@@ -102,7 +146,7 @@ export default function TimelineScrubber({
       {/* Presets row */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-1 flex-wrap">
-          {WINDOW_PRESETS.map((p) => (
+          {presets.map((p) => (
             <button
               key={p.value}
               onClick={() => onWindowChange(p.value)}
@@ -131,7 +175,7 @@ export default function TimelineScrubber({
         </p>
       </div>
 
-      {/* Scrubber track — always visible; click activates filtering */}
+      {/* Scrubber track */}
       <div className="relative pt-1 pb-5 cursor-col-resize">
         <div
           ref={trackRef}
@@ -155,7 +199,7 @@ export default function TimelineScrubber({
             ))}
           </div>
 
-          {/* Active window highlight — only when filtering */}
+          {/* Active window highlight */}
           {window_ !== null && (
             <div
               className="absolute inset-y-0 pointer-events-none"
@@ -169,7 +213,7 @@ export default function TimelineScrubber({
             />
           )}
 
-          {/* Thumb — only when filtering */}
+          {/* Thumb */}
           {thumbPct !== null && (
             <div
               className="absolute top-0 bottom-0 w-0.5 pointer-events-none"
