@@ -37,7 +37,7 @@ function classifyMaterial(medium) {
   const m = (medium || "").toLowerCase();
 
   // Photography (most distinctive — check first)
-  if (contains(m, "gelatin silver", "photograph", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "photogravure", "heliogravure", "palladium print", "platinum print", "calotype"))
+  if (contains(m, "gelatin silver", "silver gelatin", "silver-gelatin", "photograph", "daguerreotype", "chromogenic", "albumen", "cyanotype", "tintype", "ambrotype", "photogravure", "heliogravure", "palladium print", "platinum print", "calotype"))
     return "photography";
 
   // Posters (before prints — many posters are lithographs)
