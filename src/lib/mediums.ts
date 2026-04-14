@@ -26,15 +26,9 @@ export const MEDIUMS: Medium[] = [
   },
   {
     id: "prints",
-    label: "Prints",
-    keywords: ["etching", "woodblock", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "intaglio", "monotype"],
+    label: "Prints & Posters",
+    keywords: ["etching", "woodblock", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "intaglio", "monotype", "poster", "broadside"],
     color: "#374151",
-  },
-  {
-    id: "posters",
-    label: "Posters",
-    keywords: ["poster", "broadside"],
-    color: "#1d4ed8",
   },
   {
     id: "ceramics",

@@ -47,12 +47,8 @@ function classifyMaterial(medium) {
   if (contains(m, "encaustic", "tempera", "fresco", "oil on canvas", "oil on panel", "oil on copper", "oil on board", "acrylic on canvas", "acrylic on panel", "egg tempera", "casein"))
     return "painting";
 
-  // Posters (before prints — many posters are lithographs)
-  if (contains(m, "poster", "broadside"))
-    return "posters";
-
-  // Prints (process-based — check before precious metals so "etching with gold leaf" is a print, not metalwork)
-  if (contains(m, "etching", "woodblock", "letterpress", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio", "chine collé", "chine-collé", "photogravure", "heliogravure", "photoetching", "photolithograph"))
+  // Prints & Posters (process-based — check before precious metals so "etching with gold leaf" is a print)
+  if (contains(m, "etching", "woodblock", "letterpress", "lithograph", "woodcut", "engraving", "aquatint", "mezzotint", "screenprint", "silkscreen", "linocut", "drypoint", "monotype", "intaglio", "chine collé", "chine-collé", "photogravure", "heliogravure", "photoetching", "photolithograph", "poster", "broadside"))
     return "prints";
 
   // Jade (before stone — jade is a mineral but curators treat it separately)
@@ -75,8 +71,8 @@ function classifyMaterial(medium) {
   if (contains(m, "gold", "silver", "gilt", "repoussé", "repousse", "niello", "filigree", "granulation", "enamel on metal", "cloisonné", "champlevé"))
     return "metalwork";
 
-  // Silk & Textile
-  if (contains(m, "silk", "embroidery", "tapestry", "brocade", "velvet", "linen", "cotton", "wool", "woven", "weaving", "textile", "needlework", "carpet", "rug", "lace", "damask", "satin", "taffeta", "batik", "ikat"))
+  // Silk & Textile — use containsWord for "silk" so "silkscreen" doesn't match
+  if (containsWord(m, "silk") || contains(m, "embroidery", "tapestry", "brocade", "velvet", "linen", "cotton", "wool", "woven", "weaving", "textile", "needlework", "carpet", "rug", "lace", "damask", "satin", "taffeta", "batik", "ikat"))
     return "silk";
 
   // Wood & Lacquer
