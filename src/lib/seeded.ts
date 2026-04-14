@@ -6,10 +6,10 @@ import { createStaticClient } from "@/lib/supabase/static";
 
 export const SEEDED_PAGE_SIZE = 5;
 
-type SeededInstitution = "cleveland" | "smithsonian" | "colbase" | "getty" | "princeton";
+type SeededInstitution = "cleveland" | "smithsonian" | "getty" | "princeton";
 
 const INSTITUTIONS: SeededInstitution[] = [
-  "cleveland", "smithsonian", "colbase", "getty", "princeton",
+  "cleveland", "smithsonian", "getty", "princeton",
 ];
 
 function dailyStart(institution: string, total: number): number {
