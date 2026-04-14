@@ -52,6 +52,14 @@ function classifyMaterial(medium) {
   if (contains(m, "jade", "nephrite", "jadeite"))
     return "jade";
 
+  // Ceramics (before metals — "porcelain with gold" is ceramics, not metalwork)
+  if (contains(m, "porcelain", "earthenware", "stoneware", "faience", "terracotta", "terra cotta", "ceramic", "pottery", "majolica", "maiolica", "tin-glazed", "celadon", "sancai", "delftware", "creamware", "pearlware"))
+    return "ceramics";
+
+  // Glass (before metals — "glass with gilt" is glass)
+  if (contains(m, "glass", "mosaic glass", "millefiori"))
+    return "glass";
+
   // Bronze & Copper (base metals — casting, alloys)
   if (contains(m, "bronze", "copper", "brass", "copper alloy"))
     return "bronze";
@@ -59,14 +67,6 @@ function classifyMaterial(medium) {
   // Gold & Silver (precious metals — goldsmithing, silversmithing)
   if (contains(m, "gold", "silver", "gilt", "repoussé", "repousse", "niello", "filigree", "granulation", "enamel on metal", "cloisonné", "champlevé"))
     return "metalwork";
-
-  // Glass
-  if (contains(m, "glass", "mosaic glass", "millefiori"))
-    return "glass";
-
-  // Ceramics
-  if (contains(m, "porcelain", "earthenware", "stoneware", "faience", "terracotta", "terra cotta", "ceramic", "pottery", "majolica", "maiolica", "tin-glazed", "celadon", "sancai", "delftware", "creamware", "pearlware"))
-    return "ceramics";
 
   // Silk & Textile
   if (contains(m, "silk", "embroidery", "tapestry", "brocade", "velvet", "linen", "cotton", "wool", "woven", "weaving", "textile", "needlework", "carpet", "rug", "lace", "damask", "satin", "taffeta", "batik", "ikat"))
