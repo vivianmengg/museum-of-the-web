@@ -13,14 +13,6 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
 
   const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/artists") || pathname.startsWith("/artist") || pathname.startsWith("/region") || pathname.startsWith("/medium");
 
-  useEffect(() => {
-    function onDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [ref]);
-
   const baseClass = `text-sm px-3 py-0.5 rounded-full transition-colors ${
     browseActive
       ? "bg-[var(--foreground)] text-[var(--background)]"
@@ -30,8 +22,13 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
   const itemClass = "flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--border)] transition-colors rounded-md";
 
   return (
-    <div className="relative" ref={(el) => { ref.current = el; }}>
-      <button onClick={() => setOpen((v) => !v)} className={baseClass}>
+    <div
+      className="relative"
+      ref={(el) => { ref.current = el; }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button className={baseClass}>
         Browse
         <svg className="inline ml-1 mb-px" width="8" height="8" viewBox="0 0 8 8" fill="none">
           <path d="M1.5 3l2.5 2.5L6.5 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -39,10 +36,10 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
       </button>
       {open && (
         <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-[var(--border)] rounded-xl shadow-md overflow-hidden p-1 z-50">
-          <Link href="/"         onClick={() => setOpen(false)} className={itemClass}>All objects</Link>
-          <Link href="/region"   onClick={() => setOpen(false)} className={itemClass}>By region</Link>
-          <Link href="/medium"   onClick={() => setOpen(false)} className={itemClass}>By material</Link>
-          <Link href="/timeline" onClick={() => setOpen(false)} className={itemClass}>Timeline</Link>
+          <Link href="/"         className={itemClass}>All objects</Link>
+          <Link href="/region"   className={itemClass}>By region</Link>
+          <Link href="/medium"   className={itemClass}>By material</Link>
+          <Link href="/timeline" className={itemClass}>Timeline</Link>
         </div>
       )}
     </div>
