@@ -5,6 +5,8 @@ import type { MuseumObject } from "@/types";
 import ObjectCard from "@/components/ObjectCard";
 import TimelineScrubber from "@/components/TimelineScrubber";
 
+const PAGE_SIZE = 300;
+
 export default function RegionGrid({
   objects,
   color,
@@ -29,8 +31,9 @@ export default function RegionGrid({
   const maxYear = maxYearProp ?? (years.length ? Math.min(Math.max(...years), 2026) : 2026);
   const midYear = Math.round((minYear + maxYear) / 2);
 
-  const [year, setYear]           = useState(midYear);
-  const [window_, setWindow]      = useState<number | null>(null); // null = All
+  const [year, setYear]      = useState(midYear);
+  const [window_, setWindow] = useState<number | null>(null);
+  const [shown, setShown]    = useState(PAGE_SIZE);
 
   const visible = useMemo(() => {
     if (window_ === null) return objects;
@@ -41,21 +44,30 @@ export default function RegionGrid({
     });
   }, [objects, yearMap, year, window_]);
 
+  // Reset pagination when filter changes
+  const paged = visible.slice(0, shown);
+  const hasMore = visible.length > shown;
+
+  function handleWindowChange(w: number | null) {
+    setShown(PAGE_SIZE);
+    setWindow(w);
+  }
+
   return (
     <>
       <TimelineScrubber
         years={years}
         year={year}
         window={window_}
-        onYearChange={setYear}
-        onWindowChange={setWindow}
+        onYearChange={(y) => { setShown(PAGE_SIZE); setYear(y); }}
+        onWindowChange={handleWindowChange}
         visibleCount={visible.length}
         start={minYear}
         end={maxYear}
       />
 
       <div className="columns-2 sm:columns-3 lg:columns-4 gap-1">
-        {visible.map((obj) => (
+        {paged.map((obj) => (
           <div key={obj.id} className="mb-1">
             <ObjectCard object={obj} />
           </div>
@@ -64,6 +76,17 @@ export default function RegionGrid({
 
       {visible.length === 0 && (
         <p className="text-sm text-[var(--muted)] text-center py-16">No objects in this range.</p>
+      )}
+
+      {hasMore && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setShown((s) => s + PAGE_SIZE)}
+            className="text-sm px-5 py-2 rounded-full border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
+          >
+            Load more ({visible.length - shown} remaining)
+          </button>
+        </div>
       )}
     </>
   );
