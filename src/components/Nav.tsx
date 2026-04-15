@@ -35,11 +35,13 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
         </svg>
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-44 bg-white border border-[var(--border)] rounded-xl shadow-md overflow-hidden p-1 z-50">
+        <div className="absolute top-full left-0 pt-2 w-44 z-50">
+        <div className="bg-white border border-[var(--border)] rounded-xl shadow-md overflow-hidden p-1">
           <Link href="/"         className={itemClass}>All objects</Link>
           <Link href="/region"   className={itemClass}>By region</Link>
           <Link href="/medium"   className={itemClass}>By material</Link>
           <Link href="/timeline" className={itemClass}>Timeline</Link>
+        </div>
         </div>
       )}
     </div>
