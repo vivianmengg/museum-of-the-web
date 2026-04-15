@@ -53,18 +53,21 @@ export async function fetchMomaPage(
   try {
     const supabase = createStaticClient();
 
-    // For search queries, paginate normally
     if (filters.q) {
       const from = page * MOMA_PAGE_SIZE;
       const to = from + MOMA_PAGE_SIZE - 1;
-      const { data, count, error } = await supabase
+      let query = supabase
         .from("objects_cache")
         .select("*", { count: "exact" })
         .eq("institution", "moma")
         .not("thumbnail_url", "is", null)
-        .not("id", "in", `(${BLOCKED_IDS.join(",")})`)
-        .or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`)
-        .range(from, to);
+        .not("id", "in", `(${BLOCKED_IDS.join(",")})`);
+
+      query = query.or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`);
+      if (filters.dateBegin) query = query.gte("year_begin", Number(filters.dateBegin));
+      if (filters.dateEnd)   query = query.lte("year_end",   Number(filters.dateEnd));
+
+      const { data, count, error } = await query.range(from, to);
       if (error) return { objects: [], total: 0 };
       return { objects: (data ?? []).map(rowToObject), total: count ?? 0 };
     }

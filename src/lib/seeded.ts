@@ -5,6 +5,7 @@ import type { BrowseFilters } from "./constants";
 import { createStaticClient } from "@/lib/supabase/static";
 
 export const SEEDED_PAGE_SIZE = 5;
+export const PILL_PAGE_SIZE = 25;
 
 type SeededInstitution = "cleveland" | "smithsonian" | "getty" | "princeton";
 
@@ -40,6 +41,38 @@ function rowToObject(row: Record<string, unknown>): MuseumObject {
   };
 }
 
+// Pill-filtered browse: queries ALL institutions using indexed country/continent/material columns.
+// Called when any of countryFilter, continentFilter, or materialId is set (without a text query).
+export async function fetchPillPage(
+  filters: BrowseFilters,
+  page: number
+): Promise<{ objects: MuseumObject[]; total: number }> {
+  try {
+    const supabase = createStaticClient();
+    const from = page * PILL_PAGE_SIZE;
+    const to = from + PILL_PAGE_SIZE - 1;
+
+    let query = supabase
+      .from("objects_cache")
+      .select("*", { count: "exact" })
+      .not("thumbnail_url", "is", null)
+      .neq("institution", "harvard")
+      .neq("institution", "colbase");
+
+    if (filters.countryFilter)   query = query.eq("country",   filters.countryFilter);
+    if (filters.continentFilter) query = query.eq("continent", filters.continentFilter);
+    if (filters.materialId)      query = query.eq("material",  filters.materialId);
+    if (filters.dateBegin)       query = query.gte("year_begin", Number(filters.dateBegin));
+    if (filters.dateEnd)         query = query.lte("year_end",   Number(filters.dateEnd));
+
+    const { data, count, error } = await query.range(from, to);
+    if (error) return { objects: [], total: 0 };
+    return { objects: (data ?? []).map(rowToObject), total: count ?? 0 };
+  } catch {
+    return { objects: [], total: 0 };
+  }
+}
+
 export async function fetchSeededPage(
   filters: BrowseFilters,
   page: number
@@ -47,16 +80,23 @@ export async function fetchSeededPage(
   try {
     const supabase = createStaticClient();
 
-    if (filters.q) {
+    const hasFilters = filters.q || filters.dateBegin || filters.dateEnd;
+
+    if (hasFilters) {
       const from = page * SEEDED_PAGE_SIZE;
       const to = from + SEEDED_PAGE_SIZE - 1;
-      const { data, count, error } = await supabase
+      let query = supabase
         .from("objects_cache")
         .select("*", { count: "exact" })
         .in("institution", INSTITUTIONS)
-        .not("thumbnail_url", "is", null)
-        .or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`)
-        .range(from, to);
+        .not("thumbnail_url", "is", null);
+
+      if (filters.q) query = query.or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`);
+      if (filters.materialId) query = query.eq("material", filters.materialId);
+      if (filters.dateBegin)  query = query.gte("year_begin", Number(filters.dateBegin));
+      if (filters.dateEnd)    query = query.lte("year_end",   Number(filters.dateEnd));
+
+      const { data, count, error } = await query.range(from, to);
       if (error) return { objects: [], total: 0 };
       return { objects: (data ?? []).map(rowToObject), total: count ?? 0 };
     }

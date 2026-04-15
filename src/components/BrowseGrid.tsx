@@ -21,18 +21,19 @@ const SESSION_KEY = "browse-state";
 const HOME_SESSION_KEY = "browse-home-state"; // never overwritten by search
 
 function isHomeFilters(f: BrowseFilters) {
-  return !f.q && !f.culture && !f.medium && !f.dateBegin && !f.dateEnd;
+  return !f.q && !f.countryFilter && !f.continentFilter && !f.materialId && !f.dateBegin && !f.dateEnd;
 }
 
 export default function BrowseGrid() {
   const searchParams = useSearchParams();
   const initialFilters: BrowseFilters = {
-    q:           searchParams.get("q")           ?? undefined,
-    culture:     searchParams.get("culture")     ?? undefined,
-    medium:      searchParams.get("medium")      ?? undefined,
-    dateBegin:   searchParams.get("dateBegin")   ?? undefined,
-    dateEnd:     searchParams.get("dateEnd")     ?? undefined,
-    publicDomain: searchParams.get("publicDomain") === "true" ? true : undefined,
+    q:               searchParams.get("q")               ?? undefined,
+    countryFilter:   searchParams.get("countryFilter")   ?? undefined,
+    continentFilter: searchParams.get("continentFilter") ?? undefined,
+    materialId:      searchParams.get("materialId")      ?? undefined,
+    dateBegin:       searchParams.get("dateBegin")       ?? undefined,
+    dateEnd:         searchParams.get("dateEnd")         ?? undefined,
+    publicDomain:    searchParams.get("publicDomain") === "true" ? true : undefined,
   };
 
   const [objects, setObjects] = useState<MuseumObject[]>([]);
@@ -52,6 +53,7 @@ export default function BrowseGrid() {
   const pageRef = useRef(1);
   const filtersRef = useRef<BrowseFilters>(initialFilters);
   const hasMoreRef = useRef(true);
+  const requestIdRef = useRef(0);
   const [hasMore, setHasMore] = useState(true);
 
   const zoom = usePinchZoom(gridRef);
@@ -94,7 +96,7 @@ export default function BrowseGrid() {
         }
       }
     } catch { /* ignore */ }
-    fetchPage(0, filtersRef.current, true);
+    fetchPage(0, filtersRef.current, true, requestIdRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -128,21 +130,33 @@ export default function BrowseGrid() {
   const fetchPage = useCallback(async (
     nextPage: number,
     nextFilters: BrowseFilters,
-    replace: boolean
+    replace: boolean,
+    requestId: number,
   ) => {
-    if (loadingRef.current) return;
+    // Discard if a newer filter has been applied
+    if (requestId !== requestIdRef.current) return;
+    // For scroll-triggered loads: skip if a fetch is already in progress
+    if (!replace && loadingRef.current) return;
     loadingRef.current = true;
 
     const params = new URLSearchParams({ page: String(nextPage) });
-    if (nextFilters.q) params.set("q", nextFilters.q);
-    if (nextFilters.culture) params.set("culture", nextFilters.culture);
-    if (nextFilters.medium) params.set("medium", nextFilters.medium);
-    if (nextFilters.dateBegin) params.set("dateBegin", nextFilters.dateBegin);
-    if (nextFilters.dateEnd) params.set("dateEnd", nextFilters.dateEnd);
+    if (nextFilters.q)               params.set("q",               nextFilters.q);
+    if (nextFilters.countryFilter)   params.set("countryFilter",   nextFilters.countryFilter);
+    if (nextFilters.continentFilter) params.set("continentFilter", nextFilters.continentFilter);
+    if (nextFilters.materialId)      params.set("materialId",      nextFilters.materialId);
+    if (nextFilters.dateBegin)       params.set("dateBegin",       nextFilters.dateBegin);
+    if (nextFilters.dateEnd)         params.set("dateEnd",         nextFilters.dateEnd);
 
     try {
       const res = await fetch(`/api/objects?${params}`);
       const data = await res.json();
+
+      // Discard results if a newer filter was applied while this was in-flight
+      if (requestId !== requestIdRef.current) {
+        loadingRef.current = false;
+        return;
+      }
+
       const incoming: MuseumObject[] = data.objects ?? [];
       const newTotal: number = data.total ?? 0;
 
@@ -205,8 +219,10 @@ export default function BrowseGrid() {
     pageRef.current = 0;
     setObjects([]);
     setLoading(true);
+    loadingRef.current = false; // preempt any in-flight background load
+    const id = ++requestIdRef.current;
     sessionStorage.removeItem(SESSION_KEY);
-    fetchPage(0, newFilters, true);
+    fetchPage(0, newFilters, true, id);
   }
 
   function handleRefresh() {
@@ -217,7 +233,7 @@ export default function BrowseGrid() {
     setLoading(true);
     sessionStorage.removeItem(SESSION_KEY);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    fetchPage(0, filtersRef.current, true);
+    fetchPage(0, filtersRef.current, true, ++requestIdRef.current);
   }
 
   useEffect(() => {
@@ -227,7 +243,7 @@ export default function BrowseGrid() {
     observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !loadingRef.current && hasMoreRef.current) {
-          fetchPage(pageRef.current, filtersRef.current, false);
+          fetchPage(pageRef.current, filtersRef.current, false, requestIdRef.current);
         }
       },
       { rootMargin: "1000px" }
@@ -260,20 +276,8 @@ export default function BrowseGrid() {
           >
             ↺
           </button>
-          <button
-            onClick={() => setShowFilters((v) => !v)}
-            className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-3 py-1 border border-[var(--border)] rounded-full"
-          >
-            {showFilters ? "Hide filters" : "Filter"}
-          </button>
         </div>
       </div>
-
-      {showFilters && (
-        <div className="mb-6">
-          <FilterBar onFilter={handleFilter} />
-        </div>
-      )}
 
 
       {loading ? (

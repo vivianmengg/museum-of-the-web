@@ -3,7 +3,7 @@ import { fetchMetPage } from "@/lib/met";
 import { fetchAicPage } from "@/lib/aic";
 import { fetchRijksPage } from "@/lib/rijks";
 import { fetchMomaPage } from "@/lib/moma";
-import { fetchSeededPage } from "@/lib/seeded";
+import { fetchSeededPage, fetchPillPage } from "@/lib/seeded";
 import type { BrowseFilters } from "@/lib/constants";
 import type { MuseumObject } from "@/types";
 
@@ -25,7 +25,6 @@ function interleaveDeduped(...arrays: MuseumObject[][]): MuseumObject[] {
     for (const arr of arrays) {
       if (i >= arr.length) continue;
       const obj = arr[i];
-      // Deduplicate by title+artist — same work in multiple collections looks like a repeat
       const key = `${normalize(obj.title)}|${normalize(obj.artistName)}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -40,15 +39,27 @@ export async function GET(request: NextRequest) {
 
   const page = parseInt(searchParams.get("page") ?? "0", 10);
   const filters: BrowseFilters = {
-    q: searchParams.get("q") ?? undefined,
-    culture: searchParams.get("culture") ?? undefined,
-    medium: searchParams.get("medium") ?? undefined,
-    dateBegin: searchParams.get("dateBegin") ?? undefined,
-    dateEnd: searchParams.get("dateEnd") ?? undefined,
-    publicDomain: searchParams.get("publicDomain") === "true" ? true : undefined,
+    q:               searchParams.get("q")               ?? undefined,
+    countryFilter:   searchParams.get("countryFilter")   ?? undefined,
+    continentFilter: searchParams.get("continentFilter") ?? undefined,
+    materialId:      searchParams.get("materialId")      ?? undefined,
+    culture:         searchParams.get("culture")         ?? undefined,
+    medium:          searchParams.get("medium")          ?? undefined,
+    dateBegin:       searchParams.get("dateBegin")       ?? undefined,
+    dateEnd:         searchParams.get("dateEnd")         ?? undefined,
+    publicDomain:    searchParams.get("publicDomain") === "true" ? true : undefined,
   };
 
+  // Pill filters (country/continent/material) use indexed DB columns — single Supabase query,
+  // no live APIs needed. This is the fast, accurate path for region/material browsing.
+  const hasPillFilters = !filters.q && (filters.countryFilter || filters.continentFilter || filters.materialId);
+
   try {
+    if (hasPillFilters) {
+      const result = await fetchPillPage(filters, page);
+      return NextResponse.json(result);
+    }
+
     const [met, aic, rijks, moma, seeded] = await Promise.all([
       fetchMetPage(filters, page),
       fetchAicPage(filters, page),
