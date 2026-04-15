@@ -34,7 +34,7 @@ function deriveScale(span: number): {
     defaultWindow: 150,
     tickInterval: span > 2000 ? 500 : 200,
   };
-  if (span > 200) return {
+  if (span > 250) return {
     presets: [
       { label: "±25 yr",  value: 25  },
       { label: "±50 yr",  value: 50  },
