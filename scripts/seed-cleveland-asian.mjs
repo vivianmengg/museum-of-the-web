@@ -66,7 +66,7 @@ async function fetchDepartment(department) {
 function rowFromRecord(r) {
   const images = r.images;
   const thumbnailUrl = images?.web?.url ?? images?.print?.url ?? null;
-  const imageUrl = images?.full?.url ?? thumbnailUrl;
+  const imageUrl = images?.print?.url ?? images?.web?.url ?? null;
   if (!thumbnailUrl) return null;
 
   const culture = Array.isArray(r.culture) ? r.culture.join(", ") : (r.culture ?? "");

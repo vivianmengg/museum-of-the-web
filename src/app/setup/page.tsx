@@ -8,13 +8,13 @@ export default async function SetupPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect("/auth");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth");
 
   const { data: profile } = await supabase
     .from("users")
     .select("username, is_anonymous, onboarded")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .maybeSingle();
 
   const { next } = await searchParams;

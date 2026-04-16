@@ -144,7 +144,7 @@ export default function Nav() {
               </button>
             </div>
           ) : (
-            <Link href="/auth" className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+            <Link href={pathname.startsWith("/auth") ? "/auth" : `/auth?next=${encodeURIComponent(pathname)}`} className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
               Sign in
             </Link>
           )}
@@ -161,7 +161,7 @@ export default function Nav() {
             {(user.email?.split("@")[0] ?? "?")[0].toUpperCase()}
           </Link>
         ) : (
-          <Link href="/auth" className="shrink-0 text-xs px-3 py-1.5 border border-[var(--border)] rounded-full text-[var(--muted)]">
+          <Link href={pathname.startsWith("/auth") ? "/auth" : `/auth?next=${encodeURIComponent(pathname)}`} className="shrink-0 text-xs px-3 py-1.5 border border-[var(--border)] rounded-full text-[var(--muted)]">
             Sign in
           </Link>
         )}
