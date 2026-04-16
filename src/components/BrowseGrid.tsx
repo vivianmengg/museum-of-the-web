@@ -281,11 +281,11 @@ export default function BrowseGrid() {
 
 
       {loading ? (
-        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-1">
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-3">
           {Array.from({ length: 20 }).map((_, i) => (
             <div
               key={i}
-              className="mb-1 break-inside-avoid rounded-md bg-[var(--border)]/40 animate-pulse"
+              className="mb-3 break-inside-avoid rounded-md bg-[var(--border)]/40 animate-pulse"
               style={{ height: `${120 + (i % 5) * 40}px` }}
             />
           ))}
@@ -293,8 +293,8 @@ export default function BrowseGrid() {
       ) : (
         <Masonry
           breakpointCols={mounted ? breakpoints : breakpoints.default}
-          className="flex gap-1"
-          columnClassName="flex flex-col gap-1 transition-[width] duration-200 ease-out"
+          className="flex gap-3"
+          columnClassName="flex flex-col gap-3 transition-[width] duration-200 ease-out"
         >
           {objects.map((obj, i) => (
             <ObjectCard key={obj.id} object={obj} priority={i < 12} />

@@ -66,9 +66,9 @@ export default function RegionGrid({
         end={maxYear}
       />
 
-      <div className="columns-2 sm:columns-3 lg:columns-4 gap-1">
+      <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">
         {paged.map((obj) => (
-          <div key={obj.id} className="mb-1">
+          <div key={obj.id} className="mb-3">
             <ObjectCard object={obj} />
           </div>
         ))}

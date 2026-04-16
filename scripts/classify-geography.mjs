@@ -148,6 +148,10 @@ function classify(row) {
     return { continent: "islamic", country: "Islamic World" };
 
   // ── Asia – East Asia ────────────────────────────────────────────────────────
+  // Specific culture names that don't contain "chinese"/"chinese"
+  if (contains(culture, "liangzhu", "shang dynasty", "zhou dynasty", "han dynasty", "tang dynasty", "song dynasty", "yuan dynasty", "ming dynasty", "qing dynasty", "neolithic china"))
+    return { continent: "asia", country: "China" };
+
   if (contains(culture, "chinese", "china") || (contains(dept, "asian") && contains(culture, "chinese", "china")))
     return { continent: "asia", country: "China" };
 
@@ -191,6 +195,19 @@ function classify(row) {
 
   if (contains(culture, "tibetan", "tibet"))
     return { continent: "asia", country: "Tibet" };
+
+  // Cleveland-specific named departments
+  if (contains(dept, "korean art"))
+    return { continent: "asia", country: "Korea" };
+
+  if (contains(dept, "chinese art"))
+    return { continent: "asia", country: "China" };
+
+  if (contains(dept, "japanese art"))
+    return { continent: "asia", country: "Japan" };
+
+  if (contains(dept, "indian and southeast asian"))
+    return { continent: "asia", country: null };
 
   // General Asian dept fallback
   if (contains(dept, "asian"))
@@ -323,6 +340,17 @@ function classify(row) {
   if (contains(dept, "oceania") || contains(dept, "pacific"))
     return { continent: "oceania", country: null };
 
+  // ── Smithsonian fallback (all Freer/Sackler objects are Asian art) ────────────
+  // Use gallery/exhibition names in the department field to narrow the country
+  if (inst === "smithsonian") {
+    if (contains(dept, "korea", "korean")) return { continent: "asia", country: "Korea" };
+    if (contains(dept, "china", "chinese")) return { continent: "asia", country: "China" };
+    if (contains(dept, "japan", "japanese")) return { continent: "asia", country: "Japan" };
+    if (contains(dept, "india", "indian", "south asia")) return { continent: "asia", country: "India" };
+    if (contains(dept, "islamic", "iran", "persian")) return { continent: "islamic", country: null };
+    return { continent: "asia", country: null };
+  }
+
   return null; // unclassified
 }
 
@@ -353,18 +381,19 @@ function islamicCountry(culture) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 const PAGE = 1000;
-let offset = 0;
 let total = 0;
 let unclassified = 0;
 
 console.log("Starting geographic classification…");
 
 while (true) {
+  // Always fetch from offset 0: processed objects leave the null-continent set,
+  // so we never need to advance the offset.
   const { data, error } = await supabase
     .from("objects_cache")
     .select("id, department, culture, institution")
     .is("continent", null)
-    .range(offset, offset + PAGE - 1);
+    .range(0, PAGE - 1);
 
   if (error) { console.error(error.message); break; }
   if (!data || data.length === 0) break;
@@ -394,7 +423,6 @@ while (true) {
   process.stdout.write(`\r${total} classified, ${unclassified} unclassified…`);
 
   if (data.length < PAGE) break;
-  offset += PAGE;
 }
 
 console.log(`\nDone. ${total} rows processed, ${unclassified} unclassified.`);

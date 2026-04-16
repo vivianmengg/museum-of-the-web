@@ -68,13 +68,19 @@ export default async function RegionDetailPage({
       query = query.eq("continent", country.continent).eq("country", country.dbValue);
     }
 
-    query = query.order("id").range(page * PAGE, (page + 1) * PAGE - 1);
+    query = query.range(page * PAGE, (page + 1) * PAGE - 1);
 
     const { data, error } = await query;
     if (error) { console.error(`region ${id} page ${page}:`, error.message); break; }
     if (!data || data.length === 0) break;
     allRows.push(...(data as Record<string, unknown>[]));
     if (data.length < PAGE) break;
+  }
+
+  // Shuffle so no single institution dominates the top (IDs like "cleveland-*" sorted first alphabetically)
+  for (let i = allRows.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allRows[i], allRows[j]] = [allRows[j], allRows[i]];
   }
 
   const objects = allRows.map(rowToObject);
