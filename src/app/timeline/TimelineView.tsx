@@ -387,7 +387,7 @@ export default function TimelineView({ objects, civilizations }: Props) {
           </div>
 
           {/* Tick labels */}
-          <div className="relative h-5 mt-1">
+          <div className="relative h-5 mt-1 overflow-hidden">
             {TICK_YEARS.map(({ year: y, mobileHide }, i) => {
               const pct = ((y - START) / RANGE) * 100;
               const isFirst = i === 0;
@@ -453,7 +453,7 @@ export default function TimelineView({ objects, civilizations }: Props) {
               </div>
 
               {/* Objects row */}
-              <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))" }}>
+              <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
                 {civObjects.map((obj) => (
                   <Link
                     key={obj.id}
