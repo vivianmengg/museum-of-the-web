@@ -8,22 +8,7 @@ import type { MuseumObject } from "@/types";
 import TracesSection from "@/components/TracesSection";
 import PresencePanel from "@/components/PresencePanel";
 import ExhibitPicker from "@/components/ExhibitPicker";
-
-const INSTITUTION_LABELS: Record<string, string> = {
-  met: "The Metropolitan Museum of Art",
-  aic: "Art Institute of Chicago",
-  rijks: "Rijksmuseum",
-  moma: "Museum of Modern Art",
-  getty: "J. Paul Getty Museum",
-  harvard: "Harvard Art Museums",
-  cleveland: "Cleveland Museum of Art",
-  smithsonian: "Smithsonian Institution",
-  princeton: "Princeton University Art Museum",
-  freer: "Freer Gallery of Art",
-  colbase: "ColBase",
-  brooklyn: "Brooklyn Museum",
-  wcma: "Williams College Museum of Art",
-};
+import { institutionLabel } from "@/lib/institutions";
 
 export default function ObjectView({ object, currentUserId }: { object: MuseumObject; currentUserId: string | null }) {
   const [imgExpanded, setImgExpanded] = useState(false);
@@ -117,7 +102,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
           {/* Left — description */}
           <div className="lg:pr-16">
             <span className="text-[10px] tracking-widest uppercase text-[var(--muted)] mb-3 block">
-              {INSTITUTION_LABELS[object.institution] ?? object.institution}
+              {institutionLabel(object.institution)}
             </span>
             <h1 className="font-[family-name:var(--font-lora)] italic text-3xl sm:text-4xl leading-snug mb-2">
               {object.title}
@@ -157,7 +142,7 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
                 rel="noopener noreferrer"
                 className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors underline underline-offset-2 mt-8 block"
               >
-                View on {INSTITUTION_LABELS[object.institution] ?? object.institution} →
+                View on {institutionLabel(object.institution)} →
               </a>
             )}
           </div>

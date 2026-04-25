@@ -9,7 +9,7 @@ import ObjectView from "./ObjectView";
 function rowToObject(row: Record<string, unknown>): MuseumObject {
   return {
     id: row.id as string,
-    institution: row.institution as "met" | "aic" | "rijks",
+    institution: row.institution as string,
     title: (row.title as string) || "Untitled",
     date: (row.date as string) || "",
     culture: (row.culture as string) || "",

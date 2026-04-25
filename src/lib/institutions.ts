@@ -107,3 +107,11 @@ export const INSTITUTIONS: Institution[] = [
 export function findInstitutionById(id: string): Institution | undefined {
   return INSTITUTIONS.find((i) => i.id === id);
 }
+
+export function institutionLabel(id: string): string {
+  return findInstitutionById(id)?.label ?? id;
+}
+
+export function institutionShortName(id: string): string {
+  return findInstitutionById(id)?.shortName ?? id;
+}
