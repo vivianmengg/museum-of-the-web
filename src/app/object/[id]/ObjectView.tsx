@@ -18,6 +18,8 @@ const INSTITUTION_LABELS: Record<string, string> = {
   harvard: "Harvard Art Museums",
   cleveland: "Cleveland Museum of Art",
   smithsonian: "Smithsonian Institution",
+  princeton: "Princeton University Art Museum",
+  freer: "Freer Gallery of Art",
   colbase: "ColBase",
   brooklyn: "Brooklyn Museum",
   wcma: "Williams College Museum of Art",
