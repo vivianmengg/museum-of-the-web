@@ -5,7 +5,7 @@ import { MEDIUMS } from "@/lib/mediums";
 import type { MuseumObject } from "@/types";
 import RegionGrid from "@/app/region/[id]/RegionGrid";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 export async function generateStaticParams() {
   return MEDIUMS.map((m) => ({ id: m.id }));

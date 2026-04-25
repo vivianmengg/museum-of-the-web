@@ -5,7 +5,7 @@ import { INSTITUTIONS, findInstitutionById } from "@/lib/institutions";
 import type { MuseumObject } from "@/types";
 import InstitutionPage from "./InstitutionPage";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 export async function generateStaticParams() {
   return INSTITUTIONS.map((i) => ({ id: i.id }));

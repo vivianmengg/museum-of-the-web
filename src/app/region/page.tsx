@@ -3,7 +3,7 @@ import { createStaticClient } from "@/lib/supabase/static";
 import { REGIONS } from "@/lib/regions";
 import type { RegionCountry } from "@/lib/regions";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 async function fetchThumbnails(): Promise<Record<string, string | null>> {
   const supabase = createStaticClient();

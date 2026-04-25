@@ -5,7 +5,7 @@ import { REGIONS, findRegionById, findCountryBySlug } from "@/lib/regions";
 import type { MuseumObject } from "@/types";
 import RegionGrid from "./RegionGrid";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 export async function generateStaticParams() {
   const continents = REGIONS.map((r) => ({ id: r.id }));

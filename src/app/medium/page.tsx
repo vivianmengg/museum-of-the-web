@@ -3,7 +3,7 @@ import { MEDIUMS } from "@/lib/mediums";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 async function getMediumPreviews() {
   const supabase = createStaticClient();

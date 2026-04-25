@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { INSTITUTIONS } from "@/lib/institutions";
 
-export const revalidate = 86400;
+export const dynamic = "force-static";
 
 async function fetchInstitutionPreviews(): Promise<Record<string, { thumbnails: string[]; count: number }>> {
   const supabase = createStaticClient();
