@@ -34,6 +34,7 @@ export default function FilterBar({ onFilter }: Props) {
   const [medium, setMedium]             = useState<string | null>(null);
   const [dateBegin, setDateBegin]       = useState("");
   const [dateEnd, setDateEnd]           = useState("");
+  const [publicDomain, setPublicDomain] = useState(false);
 
   function apply(overrides: Partial<{
     region: RegionPill | null;
@@ -51,6 +52,7 @@ export default function FilterBar({ onFilter }: Props) {
       materialId:      m                  ?? undefined,
       dateBegin:       db || undefined,
       dateEnd:         de || undefined,
+      publicDomain:    publicDomain || undefined,
     });
   }
 
@@ -66,15 +68,29 @@ export default function FilterBar({ onFilter }: Props) {
     apply({ medium: next });
   }
 
+  function togglePublicDomain() {
+    const next = !publicDomain;
+    setPublicDomain(next);
+    onFilter({
+      countryFilter:   activeRegion?.countryFilter   ?? undefined,
+      continentFilter: activeRegion?.continentFilter ?? undefined,
+      materialId:      medium                        ?? undefined,
+      dateBegin:       dateBegin || undefined,
+      dateEnd:         dateEnd   || undefined,
+      publicDomain:    next || undefined,
+    });
+  }
+
   function reset() {
     setActiveRegion(null);
     setMedium(null);
     setDateBegin("");
     setDateEnd("");
+    setPublicDomain(false);
     onFilter({});
   }
 
-  const hasFilters = activeRegion || medium || dateBegin || dateEnd;
+  const hasFilters = activeRegion || medium || dateBegin || dateEnd || publicDomain;
 
   const pillBase = "px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer";
   const pillOff  = `${pillBase} border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)]`;
@@ -112,6 +128,18 @@ export default function FilterBar({ onFilter }: Props) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Public domain toggle */}
+      <div>
+        <button
+          onClick={togglePublicDomain}
+          className={`flex items-center gap-2 px-3 py-1 text-xs rounded-full border transition-colors ${
+            publicDomain ? pillOn : pillOff
+          }`}
+        >
+          <span>{publicDomain ? "✓" : ""} Public domain only</span>
+        </button>
       </div>
 
       {/* Date range */}

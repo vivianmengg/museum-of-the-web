@@ -64,6 +64,7 @@ export async function fetchPillPage(
     if (filters.materialId)      query = query.eq("material",  filters.materialId);
     if (filters.dateBegin)       query = query.gte("year_begin", Number(filters.dateBegin));
     if (filters.dateEnd)         query = query.lte("year_end",   Number(filters.dateEnd));
+    if (filters.publicDomain)    query = query.eq("is_public_domain", true);
 
     const { data, count, error } = await query.range(from, to);
     if (error) return { objects: [], total: 0 };
@@ -92,9 +93,10 @@ export async function fetchSeededPage(
         .not("thumbnail_url", "is", null);
 
       if (filters.q) query = query.or(`title.ilike.%${filters.q}%,artist_name.ilike.%${filters.q}%,medium.ilike.%${filters.q}%`);
-      if (filters.materialId) query = query.eq("material", filters.materialId);
-      if (filters.dateBegin)  query = query.gte("year_begin", Number(filters.dateBegin));
-      if (filters.dateEnd)    query = query.lte("year_end",   Number(filters.dateEnd));
+      if (filters.materialId)   query = query.eq("material", filters.materialId);
+      if (filters.dateBegin)    query = query.gte("year_begin", Number(filters.dateBegin));
+      if (filters.dateEnd)      query = query.lte("year_end",   Number(filters.dateEnd));
+      if (filters.publicDomain) query = query.eq("is_public_domain", true);
 
       const { data, count, error } = await query.range(from, to);
       if (error) return { objects: [], total: 0 };
