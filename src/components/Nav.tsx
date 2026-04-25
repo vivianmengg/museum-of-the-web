@@ -11,7 +11,7 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false);
   const ref = useState(() => ({ current: null as HTMLDivElement | null }))[0];
 
-  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/artists") || pathname.startsWith("/artist") || pathname.startsWith("/region") || pathname.startsWith("/medium") || pathname.startsWith("/echoes");
+  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/artists") || pathname.startsWith("/artist") || pathname.startsWith("/region") || pathname.startsWith("/medium");
 
   const baseClass = `text-sm px-3 py-0.5 rounded-full transition-colors ${
     browseActive
@@ -41,7 +41,6 @@ function BrowseDropdown({ pathname }: { pathname: string }) {
           <Link href="/region"      className={itemClass}>By region</Link>
           <Link href="/medium"      className={itemClass}>By material</Link>
           <Link href="/timeline"    className={itemClass}>Timeline</Link>
-          <Link href="/echoes"      className={itemClass}>Echoes</Link>
         </div>
         </div>
       )}
@@ -114,7 +113,7 @@ export default function Nav() {
     }`;
   }
 
-  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/artists") || pathname.startsWith("/artist") || pathname.startsWith("/region") || pathname.startsWith("/medium") || pathname.startsWith("/echoes");
+  const browseActive = pathname === "/" || pathname.startsWith("/timeline") || pathname.startsWith("/artists") || pathname.startsWith("/artist") || pathname.startsWith("/region") || pathname.startsWith("/medium");
 
   return (
     <>
