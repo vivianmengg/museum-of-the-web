@@ -282,6 +282,8 @@ export default function TimelineView({ objects, civilizations }: Props) {
     if (idx >= 0 && idx < BUCKETS) density[idx]++;
   }
   const maxDensity = Math.max(...density, 1);
+  const sqrtDensity = density.map(d => Math.sqrt(d));
+  const maxSqrt = Math.max(...sqrtDensity, 1);
   const thumbPct = ((year - START) / RANGE) * 100;
 
   return (
@@ -342,13 +344,13 @@ export default function TimelineView({ objects, civilizations }: Props) {
           >
             {/* Density bars */}
             <div className="absolute inset-0 flex items-end gap-px px-0">
-              {density.map((count, i) => (
+              {sqrtDensity.map((sq, i) => (
                 <div
                   key={i}
                   className="flex-1 transition-none"
                   style={{
-                    height: `${(count / maxDensity) * 100}%`,
-                    backgroundColor: `rgba(100,90,80,${0.15 + (count / maxDensity) * 0.55})`,
+                    height: `${(sq / maxSqrt) * 100}%`,
+                    backgroundColor: `rgba(100,90,80,${0.15 + (sq / maxSqrt) * 0.55})`,
                   }}
                 />
               ))}
