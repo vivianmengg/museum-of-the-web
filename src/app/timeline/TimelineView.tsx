@@ -453,7 +453,7 @@ export default function TimelineView({ objects, civilizations }: Props) {
               </div>
 
               {/* Objects row */}
-              <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
+              <div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 160px))" }}>
                 {civObjects.map((obj) => (
                   <Link
                     key={obj.id}
