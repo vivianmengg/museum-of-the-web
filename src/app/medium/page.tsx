@@ -3,7 +3,7 @@ import { MEDIUMS } from "@/lib/mediums";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 async function getMediumPreviews() {
   const supabase = createStaticClient();
