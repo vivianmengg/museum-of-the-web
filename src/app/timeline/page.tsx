@@ -135,7 +135,7 @@ export default async function TimelinePage() {
     .gte("year_begin", -7000)
     .lte("year_begin",  2026)
     .order("year_begin")
-    .limit(15000);
+    .limit(40000);
 
   const { data: harvardNeolithicRows } = await supabase
     .from("objects_cache")
@@ -156,7 +156,7 @@ export default async function TimelinePage() {
     .neq("institution", "colbase")
     .is("year_begin", null)
     .neq("date", "")
-    .limit(2000);
+    .limit(5000);
 
   const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
 
