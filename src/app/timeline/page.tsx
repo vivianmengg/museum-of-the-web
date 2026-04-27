@@ -171,7 +171,7 @@ export default async function TimelinePage() {
       .neq("institution", "colbase")
       .is("year_begin", null)
       .neq("date", "")
-      .limit(2000),
+      .limit(5000),
   ]);
 
   const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
