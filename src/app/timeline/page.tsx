@@ -85,7 +85,13 @@ export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boo
   const culture = ((row.culture    as string) || "").toLowerCase();
 
   const matchedDept = civ.deptMatch.find((d) => dept.includes(d.toLowerCase()));
-  if (!matchedDept) return false;
+
+  // No dept match: fall back to culture-only for medium-based depts (e.g. "Textiles", "Prints")
+  // Only fires when the culture is explicit — never matches blank culture.
+  if (!matchedDept) {
+    if (!culture || !civ.cultureMatch) return false;
+    return civ.cultureMatch.some((c) => culture.includes(c.toLowerCase()));
+  }
 
   if (!civ.cultureMatch) return true;
 
@@ -93,7 +99,7 @@ export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boo
   // cultureMatch is the only way to distinguish (e.g. "Arts of Africa" = Egypt vs Africa)
   if (!culture) {
     const AMBIGUOUS_DEPTS = ["arts of africa", "arts of asia", "africa, oceania", "americas"];
-    const isAmbiguous = AMBIGUOUS_DEPTS.some((a) => matchedDept.toLowerCase().includes(a));
+    const isAmbiguous = AMBIGUOUS_DEPTS.some((a) => dept.includes(a));
     return !isAmbiguous;
   }
 
