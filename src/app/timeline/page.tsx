@@ -131,39 +131,42 @@ function sampleSpread(arr: number[], count: number): number[] {
 export default async function TimelinePage() {
   const supabase = createStaticClient();
 
-  // Main objects: exclude harvard except Neolithic Chinese (year_begin <= -1500)
-  const { data: seededRows } = await supabase
-    .from("objects_cache")
-    .select("*")
-    .not("thumbnail_url", "is", null)
-    .not("year_begin", "is", null)
-    .neq("institution", "harvard")
-    .neq("institution", "colbase")
-    .gte("year_begin", -7000)
-    .lte("year_begin",  2026)
-    .order("year_begin")
-    .limit(40000);
-
-  const { data: harvardNeolithicRows } = await supabase
-    .from("objects_cache")
-    .select("*")
-    .not("thumbnail_url", "is", null)
-    .not("year_begin", "is", null)
-    .eq("institution", "harvard")
-    .gte("year_begin", -7000)
-    .lte("year_begin", -1500)
-    .order("year_begin")
-    .limit(500);
-
-  const { data: browseRows } = await supabase
-    .from("objects_cache")
-    .select("*")
-    .not("thumbnail_url", "is", null)
-    .neq("institution", "harvard")
-    .neq("institution", "colbase")
-    .is("year_begin", null)
-    .neq("date", "")
-    .limit(5000);
+  const [
+    { data: seededRows },
+    { data: harvardNeolithicRows },
+    { data: browseRows },
+  ] = await Promise.all([
+    supabase
+      .from("objects_cache")
+      .select("*")
+      .not("thumbnail_url", "is", null)
+      .not("year_begin", "is", null)
+      .neq("institution", "harvard")
+      .neq("institution", "colbase")
+      .gte("year_begin", -7000)
+      .lte("year_begin",  2026)
+      .order("year_begin")
+      .limit(40000),
+    supabase
+      .from("objects_cache")
+      .select("*")
+      .not("thumbnail_url", "is", null)
+      .not("year_begin", "is", null)
+      .eq("institution", "harvard")
+      .gte("year_begin", -7000)
+      .lte("year_begin", -1500)
+      .order("year_begin")
+      .limit(500),
+    supabase
+      .from("objects_cache")
+      .select("*")
+      .not("thumbnail_url", "is", null)
+      .neq("institution", "harvard")
+      .neq("institution", "colbase")
+      .is("year_begin", null)
+      .neq("date", "")
+      .limit(2000),
+  ]);
 
   const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
 
@@ -198,54 +201,8 @@ export default async function TimelinePage() {
     }
   }
 
-  const sparseCivs = CIVILIZATIONS.filter((c) => (civCounts.get(c.id) ?? 0) < CACHE_SUFFICIENT);
-
-  if (sparseCivs.length > 0) {
-    const existingIds = new Set(timelineObjects.map((o) => o.id));
-
-    const bucketResults = await Promise.all(
-      sparseCivs.flatMap((civ) =>
-        TIME_BUCKETS.map(async ({ from, to }) => {
-          const ids = await fetchBucketIds(civ, from, to);
-          return { civ, ids: sampleSpread(ids, PER_BUCKET) };
-        })
-      )
-    );
-
-    const toFetch: Array<{ civ: Civilization; id: number }> = [];
-    const seenIds = new Set<number>();
-    for (const { civ, ids } of bucketResults) {
-      for (const id of ids) {
-        const cacheKey = `met-${id}`;
-        if (!seenIds.has(id) && !existingIds.has(cacheKey)) {
-          seenIds.add(id);
-          toFetch.push({ civ, id });
-        }
-      }
-    }
-
-    const fetched = await Promise.all(
-      toFetch.map(async ({ civ, id }) => {
-        const obj = await fetchMetObject(id);
-        return obj ? { civ, obj } : null;
-      })
-    );
-
-    for (const result of fetched) {
-      if (!result) continue;
-      const { obj } = result;
-      const year = parseDateToYear(obj.date);
-      if (year === null || year < -7000 || year > 1900) continue;
-
-      const fakeRow = { department: obj.department, culture: obj.culture };
-      let civId = result.civ.id;
-      for (const civ of CIVILIZATIONS) {
-        if (matchesCiv(fakeRow as Record<string, unknown>, civ)) { civId = civ.id; break; }
-      }
-
-      timelineObjects.push({ ...obj, civId, year });
-    }
-  }
+  // Met API fallback disabled — too slow for serverless (causes timeouts on Vercel).
+  // Civilizations with few cached objects will show what's in the DB.
 
   return <TimelineView objects={timelineObjects} civilizations={CIVILIZATIONS} />;
 }
