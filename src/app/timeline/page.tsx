@@ -87,17 +87,17 @@ export function matchesCiv(row: Record<string, unknown>, civ: Civilization): boo
   const matchedDept = civ.deptMatch.find((d) => dept.includes(d.toLowerCase()));
   if (!matchedDept) return false;
 
-  // Only apply cultureMatch for ambiguous departments (e.g. "Arts of Africa" covers
-  // both African and Egyptian objects). Specific departments like "Egyptian Art" or
-  // "Asian Art" are unambiguous — skip the culture check so blank-culture objects match.
-  const AMBIGUOUS_DEPTS = ["arts of africa", "arts of asia", "africa, oceania", "americas"];
-  const isAmbiguous = AMBIGUOUS_DEPTS.some((a) => matchedDept.toLowerCase().includes(a));
+  if (!civ.cultureMatch) return true;
 
-  if (civ.cultureMatch && (isAmbiguous || !culture)) {
-    if (!culture) return !isAmbiguous; // blank culture: pass for specific depts, fail for ambiguous
-    return civ.cultureMatch.some((c) => culture.includes(c.toLowerCase()));
+  // Blank culture: pass for specific depts, fail for ambiguous ones where
+  // cultureMatch is the only way to distinguish (e.g. "Arts of Africa" = Egypt vs Africa)
+  if (!culture) {
+    const AMBIGUOUS_DEPTS = ["arts of africa", "arts of asia", "africa, oceania", "americas"];
+    const isAmbiguous = AMBIGUOUS_DEPTS.some((a) => matchedDept.toLowerCase().includes(a));
+    return !isAmbiguous;
   }
-  return true;
+
+  return civ.cultureMatch.some((c) => culture.includes(c.toLowerCase()));
 }
 
 export { parseDateToYear } from "@/lib/parseDate";
