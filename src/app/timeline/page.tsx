@@ -1,9 +1,8 @@
 import { fetchMetObject } from "@/lib/met";
 import { createStaticClient } from "@/lib/supabase/static";
+import { unstable_cache } from "next/cache";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
-
-export const dynamic = "force-dynamic";
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
@@ -134,49 +133,55 @@ function sampleSpread(arr: number[], count: number): number[] {
   return Array.from({ length: count }, (_, i) => arr[Math.floor(i * step)]);
 }
 
+const TIMELINE_COLS = "id,institution,title,date,culture,medium,image_url,thumbnail_url,image_width,image_height,department,artist_name,credit_line,dimensions,object_url,year_begin,year_end";
+
+const fetchTimelineRows = unstable_cache(
+  async () => {
+    const supabase = createStaticClient();
+    const [
+      { data: seededRows },
+      { data: harvardNeolithicRows },
+      { data: browseRows },
+    ] = await Promise.all([
+      supabase
+        .from("objects_cache")
+        .select(TIMELINE_COLS)
+        .not("thumbnail_url", "is", null)
+        .not("year_begin", "is", null)
+        .neq("institution", "harvard")
+        .neq("institution", "colbase")
+        .gte("year_begin", -7000)
+        .lte("year_begin",  2026)
+        .order("year_begin")
+        .limit(40000),
+      supabase
+        .from("objects_cache")
+        .select(TIMELINE_COLS)
+        .not("thumbnail_url", "is", null)
+        .not("year_begin", "is", null)
+        .eq("institution", "harvard")
+        .gte("year_begin", -7000)
+        .lte("year_begin", -1500)
+        .order("year_begin")
+        .limit(500),
+      supabase
+        .from("objects_cache")
+        .select(TIMELINE_COLS)
+        .not("thumbnail_url", "is", null)
+        .neq("institution", "harvard")
+        .neq("institution", "colbase")
+        .is("year_begin", null)
+        .neq("date", "")
+        .limit(5000),
+    ]);
+    return [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])];
+  },
+  ["timeline-rows"],
+  { revalidate: 86400 }
+);
+
 export default async function TimelinePage() {
-  const supabase = createStaticClient();
-
-  const TIMELINE_COLS = "id,institution,title,date,culture,medium,image_url,thumbnail_url,image_width,image_height,department,artist_name,credit_line,dimensions,object_url,year_begin,year_end";
-
-  const [
-    { data: seededRows },
-    { data: harvardNeolithicRows },
-    { data: browseRows },
-  ] = await Promise.all([
-    supabase
-      .from("objects_cache")
-      .select(TIMELINE_COLS)
-      .not("thumbnail_url", "is", null)
-      .not("year_begin", "is", null)
-      .neq("institution", "harvard")
-      .neq("institution", "colbase")
-      .gte("year_begin", -7000)
-      .lte("year_begin",  2026)
-      .order("year_begin")
-      .limit(40000),
-    supabase
-      .from("objects_cache")
-      .select(TIMELINE_COLS)
-      .not("thumbnail_url", "is", null)
-      .not("year_begin", "is", null)
-      .eq("institution", "harvard")
-      .gte("year_begin", -7000)
-      .lte("year_begin", -1500)
-      .order("year_begin")
-      .limit(500),
-    supabase
-      .from("objects_cache")
-      .select(TIMELINE_COLS)
-      .not("thumbnail_url", "is", null)
-      .neq("institution", "harvard")
-      .neq("institution", "colbase")
-      .is("year_begin", null)
-      .neq("date", "")
-      .limit(5000),
-  ]);
-
-  const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
+  const rows = await fetchTimelineRows() as Record<string, unknown>[];
 
   const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));
   const timelineObjects: TimelineObject[] = [];
