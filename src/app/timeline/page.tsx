@@ -177,7 +177,7 @@ const fetchTimelineRows = unstable_cache(
     return [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])];
   },
   ["timeline-rows"],
-  { revalidate: 86400 }
+  { revalidate: false, tags: ["timeline-rows"] }
 );
 
 export default async function TimelinePage() {
