@@ -3,7 +3,7 @@ import { createStaticClient } from "@/lib/supabase/static";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
@@ -137,6 +137,8 @@ function sampleSpread(arr: number[], count: number): number[] {
 export default async function TimelinePage() {
   const supabase = createStaticClient();
 
+  const TIMELINE_COLS = "id,institution,title,date,culture,medium,image_url,thumbnail_url,image_width,image_height,department,artist_name,credit_line,dimensions,object_url,year_begin,year_end";
+
   const [
     { data: seededRows },
     { data: harvardNeolithicRows },
@@ -144,7 +146,7 @@ export default async function TimelinePage() {
   ] = await Promise.all([
     supabase
       .from("objects_cache")
-      .select("*")
+      .select(TIMELINE_COLS)
       .not("thumbnail_url", "is", null)
       .not("year_begin", "is", null)
       .neq("institution", "harvard")
@@ -155,7 +157,7 @@ export default async function TimelinePage() {
       .limit(40000),
     supabase
       .from("objects_cache")
-      .select("*")
+      .select(TIMELINE_COLS)
       .not("thumbnail_url", "is", null)
       .not("year_begin", "is", null)
       .eq("institution", "harvard")
@@ -165,7 +167,7 @@ export default async function TimelinePage() {
       .limit(500),
     supabase
       .from("objects_cache")
-      .select("*")
+      .select(TIMELINE_COLS)
       .not("thumbnail_url", "is", null)
       .neq("institution", "harvard")
       .neq("institution", "colbase")
