@@ -4,6 +4,8 @@ import { unstable_cache } from "next/cache";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
 export interface Civilization {
