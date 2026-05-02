@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { Lora } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import { CurationProvider } from "@/components/CurationContext";
 import CurationTray from "@/components/CurationTray";
 import { ToastProvider } from "@/components/Toast";
@@ -40,9 +41,7 @@ export default function RootLayout({
           <CurationProvider>
             <Nav />
             <main className="flex-1 pt-14 pb-20 sm:pb-0">{children}</main>
-            <footer className="py-12 text-center text-xs text-[var(--muted)] opacity-50">
-              made with ♥ by vivian m
-            </footer>
+            <Footer />
             <CurationTray />
           </CurationProvider>
         </ToastProvider>

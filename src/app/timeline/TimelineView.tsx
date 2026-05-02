@@ -213,6 +213,12 @@ export default function TimelineView({ objects, civilizations }: Props) {
   const hintedRef = useRef(false);
   const hintRafRef = useRef<number | null>(null);
 
+  // Lock page scroll while timeline is mounted — it has its own inner scroll
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   // On mount: nudge the scrubber right then left to hint it's draggable
   useEffect(() => {
     const t = setTimeout(() => {
