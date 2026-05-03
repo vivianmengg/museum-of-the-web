@@ -3,7 +3,7 @@ import { createStaticClient } from "@/lib/supabase/static";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
@@ -121,129 +121,11 @@ function sampleSpread(arr: number[], count: number): number[] {
   return Array.from({ length: count }, (_, i) => arr[Math.floor(i * step)]);
 }
 
-const COLS = "id,institution,title,date,culture,medium,image_url,thumbnail_url,image_width,image_height,department,artist_name,credit_line,dimensions,object_url,year_begin,year_end";
+const CACHE_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/timeline/data.json`;
 
 export default async function TimelinePage() {
-  const supabase = createStaticClient();
-
-  const [
-    { data: seededRows },
-    { data: harvardNeolithicRows },
-    { data: browseRows },
-  ] = await Promise.all([
-    supabase
-      .from("objects_cache")
-      .select(COLS)
-      .not("thumbnail_url", "is", null)
-      .not("year_begin", "is", null)
-      .neq("institution", "harvard")
-      .neq("institution", "colbase")
-      .gte("year_begin", -7000)
-      .lte("year_begin",  2026)
-      .order("year_begin")
-      .limit(40000),
-    supabase
-      .from("objects_cache")
-      .select(COLS)
-      .not("thumbnail_url", "is", null)
-      .not("year_begin", "is", null)
-      .eq("institution", "harvard")
-      .gte("year_begin", -7000)
-      .lte("year_begin", -1500)
-      .order("year_begin")
-      .limit(500),
-    supabase
-      .from("objects_cache")
-      .select(COLS)
-      .not("thumbnail_url", "is", null)
-      .neq("institution", "harvard")
-      .neq("institution", "colbase")
-      .is("year_begin", null)
-      .neq("date", "")
-      .limit(5000),
-  ]);
-
-  const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
-
-  const civCounts = new Map<string, number>(CIVILIZATIONS.map((c) => [c.id, 0]));
-  const timelineObjects: TimelineObject[] = [];
-
-  for (const row of rows) {
-    for (const civ of CIVILIZATIONS) {
-      if (!matchesCiv(row, civ)) continue;
-      const obj = rowToMuseumObject(row);
-      const yb = row.year_begin as number | null;
-      const ye = row.year_end   as number | null;
-      let year: number | null;
-      if (yb !== null) {
-        const span = (ye ?? yb) - yb;
-        // Ancient objects (pre-3000 BCE): use year_begin so they appear at the
-        // early end of the timeline. Later objects: use year_end for wide spans
-        // (avoids BCE-CE crossers landing in wrong era), midpoint for narrow.
-        if (yb < -3000) {
-          year = yb;
-        } else {
-          year = span > 400 ? (ye ?? yb) : Math.round((yb + (ye ?? yb)) / 2);
-        }
-      } else {
-        year = parseDateToYear(obj.date);
-      }
-      if (year !== null && year >= -7000 && year <= 2026) {
-        timelineObjects.push({ ...obj, civId: civ.id, year });
-        civCounts.set(civ.id, (civCounts.get(civ.id) ?? 0) + 1);
-      }
-      break;
-    }
-  }
-
-  const sparseCivs = CIVILIZATIONS.filter((c) => (civCounts.get(c.id) ?? 0) < CACHE_SUFFICIENT);
-
-  if (sparseCivs.length > 0) {
-    const existingIds = new Set(timelineObjects.map((o) => o.id));
-
-    const bucketResults = await Promise.all(
-      sparseCivs.flatMap((civ) =>
-        TIME_BUCKETS.map(async ({ from, to }) => {
-          const ids = await fetchBucketIds(civ, from, to);
-          return { civ, ids: sampleSpread(ids, PER_BUCKET) };
-        })
-      )
-    );
-
-    const toFetch: Array<{ civ: Civilization; id: number }> = [];
-    const seenIds = new Set<number>();
-    for (const { civ, ids } of bucketResults) {
-      for (const id of ids) {
-        const cacheKey = `met-${id}`;
-        if (!seenIds.has(id) && !existingIds.has(cacheKey)) {
-          seenIds.add(id);
-          toFetch.push({ civ, id });
-        }
-      }
-    }
-
-    const fetched = await Promise.all(
-      toFetch.map(async ({ civ, id }) => {
-        const obj = await fetchMetObject(id);
-        return obj ? { civ, obj } : null;
-      })
-    );
-
-    for (const result of fetched) {
-      if (!result) continue;
-      const { obj } = result;
-      const year = parseDateToYear(obj.date);
-      if (year === null || year < -7000 || year > 1900) continue;
-
-      const fakeRow = { department: obj.department, culture: obj.culture };
-      let civId = result.civ.id;
-      for (const civ of CIVILIZATIONS) {
-        if (matchesCiv(fakeRow as Record<string, unknown>, civ)) { civId = civ.id; break; }
-      }
-
-      timelineObjects.push({ ...obj, civId, year });
-    }
-  }
+  const res = await fetch(CACHE_URL, { cache: "no-store" });
+  const timelineObjects: TimelineObject[] = res.ok ? await res.json() : [];
 
   return <TimelineView objects={timelineObjects} civilizations={CIVILIZATIONS} />;
 }
