@@ -24,23 +24,23 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 const COLS = "id,institution,title,date,culture,department,thumbnail_url,year_begin,year_end";
 
 const CIVILIZATIONS = [
-  { id: "china",      deptMatch: ["Asian", "Chinese Art", "Arts of Asia"],    cultureMatch: ["Chinese", "China"] },
-  { id: "japan",      deptMatch: ["Asian", "Japanese Art", "Arts of Asia"],   cultureMatch: ["Japanese", "Japan"] },
-  { id: "korea",      deptMatch: ["Asian", "Korean Art", "Arts of Asia"],     cultureMatch: ["Korean", "Korea"] },
-  { id: "thailand",   deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Thai", "Thailand", "Siamese"] },
-  { id: "cambodia",   deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Cambodian", "Cambodia", "Khmer"] },
-  { id: "indonesia",  deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Indonesian", "Indonesia", "Javanese"] },
-  { id: "vietnam",    deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Vietnamese", "Vietnam", "Champa"] },
-  { id: "myanmar",    deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Burmese", "Myanmar", "Burma"] },
-  { id: "india",      deptMatch: ["Asian", "Arts of Asia", "Indian Art"],     cultureMatch: ["Indian", "India", "South Asian"] },
+  { id: "africa",     deptMatch: ["Africa"],                                  cultureMatch: ["Yoruba","Fon","Benin","Ife","Igbo","Akan","Asante","Ashanti","Bamana","Dogon","Fang","Kongo","Luba","Kuba","Pende","Chokwe","Senufo","Baule","Mangbetu","Zande","Swahili","Amhara","Edo","Tellem","Tabwa","Hemba","Songye","Lega","Middle Niger","Lower Niger","Ethiopia","Nigeria","Ghana","Mali","Kenya","Gabon","Angola","Congo"] },
+  { id: "egypt",      deptMatch: ["Egyptian", "Arts of Africa"],              cultureMatch: ["Egypt", "Egyptian"] },
   { id: "near-east",  deptMatch: ["Near Eastern", "West Asian"],              cultureMatch: null },
-  { id: "islamic",    deptMatch: ["Islamic"],                                  cultureMatch: null },
+  { id: "cambodia",   deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Cambodian", "Cambodia", "Khmer"] },
+  { id: "china",      deptMatch: ["Asian", "Chinese Art", "Arts of Asia"],    cultureMatch: ["Chinese", "China"] },
   { id: "greece-rome",deptMatch: ["Greek", "Roman", "Getty Villa", "Greece, Rome", "Greece,"], cultureMatch: null },
   { id: "europe",     deptMatch: ["European", "Medieval", "Getty Center", "Europe"], cultureMatch: null },
-  { id: "egypt",      deptMatch: ["Egyptian", "Arts of Africa"],              cultureMatch: ["Egypt", "Egyptian"] },
-  { id: "africa",     deptMatch: ["Africa"],                                  cultureMatch: ["Yoruba","Fon","Benin","Ife","Igbo","Akan","Asante","Ashanti","Bamana","Dogon","Fang","Kongo","Luba","Kuba","Pende","Chokwe","Senufo","Baule","Mangbetu","Zande","Swahili","Amhara","Edo","Tellem","Tabwa","Hemba","Songye","Lega","Middle Niger","Lower Niger","Ethiopia","Nigeria","Ghana","Mali","Kenya","Gabon","Angola","Congo"] },
-  { id: "americas",   deptMatch: ["Africa, Oceania", "Americas"],            cultureMatch: ["Maya","Mayan","Aztec","Inca","Olmec","Mixtec","Zapotec","Moche","Chimú","Chimu","Tiwanaku","Wari","Nazca","Teotihuacan","Mississippian","Hohokam","Pueblo","Native American","Mexican","Peruvian","Colombian","Costa Rican","Panamanian"] },
+  { id: "india",      deptMatch: ["Asian", "Arts of Asia", "Indian Art"],     cultureMatch: ["Indian", "India", "South Asian"] },
+  { id: "indonesia",  deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Indonesian", "Indonesia", "Javanese"] },
+  { id: "islamic",    deptMatch: ["Islamic"],                                  cultureMatch: null },
+  { id: "japan",      deptMatch: ["Asian", "Japanese Art", "Arts of Asia"],   cultureMatch: ["Japanese", "Japan"] },
+  { id: "korea",      deptMatch: ["Asian", "Korean Art", "Arts of Asia"],     cultureMatch: ["Korean", "Korea"] },
+  { id: "myanmar",    deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Burmese", "Myanmar", "Burma"] },
   { id: "oceania",    deptMatch: ["Africa, Oceania"],                         cultureMatch: ["Hawaiian","Maori","Fijian","Tongan","Samoan","Papua","Melanesian","Polynesian","Micronesian","Oceanian","Papuan"] },
+  { id: "thailand",   deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Thai", "Thailand", "Siamese"] },
+  { id: "americas",   deptMatch: ["Africa, Oceania", "Americas"],            cultureMatch: ["Maya","Mayan","Aztec","Inca","Olmec","Mixtec","Zapotec","Moche","Chimú","Chimu","Tiwanaku","Wari","Nazca","Teotihuacan","Mississippian","Hohokam","Pueblo","Native American","Mexican","Peruvian","Colombian","Costa Rican","Panamanian"] },
+  { id: "vietnam",    deptMatch: ["Asian", "Arts of Asia"],                   cultureMatch: ["Vietnamese", "Vietnam", "Champa"] },
 ];
 
 function matchesCiv(row, civ) {
