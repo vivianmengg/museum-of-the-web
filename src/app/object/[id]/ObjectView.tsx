@@ -9,6 +9,8 @@ import type { MuseumObject } from "@/types";
 import TracesSection from "@/components/TracesSection";
 import PresencePanel from "@/components/PresencePanel";
 import ExhibitPicker from "@/components/ExhibitPicker";
+import { useFavorites } from "@/lib/useFavorites";
+import { useToast } from "@/components/Toast";
 import { institutionLabel } from "@/lib/institutions";
 
 export default function ObjectView({ object, currentUserId }: { object: MuseumObject; currentUserId: string | null }) {
@@ -16,6 +18,9 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
   const [pickerOpen, setPickerOpen] = useState(false);
   const closePicker = useCallback(() => setPickerOpen(false), []);
   const pathname = usePathname();
+  const { isFavorited, toggle: toggleFavorite } = useFavorites();
+  const { show: showToast } = useToast();
+  const hearted = isFavorited(object.id);
 
   // Client-side auth state — corrects server-rendered value after back navigation
   const [userId, setUserId] = useState(currentUserId);
@@ -86,11 +91,32 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
           <div className="text-[#6b6560] text-sm py-24">No image available</div>
         )}
 
-        {/* Add to collection — floating over image */}
+        {/* Floating controls over image */}
         <div
-          className="absolute bottom-4 right-4 z-10"
+          className="absolute bottom-4 right-4 z-10 flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Heart / favourite */}
+          <button
+            onClick={() => {
+              toggleFavorite(object);
+              if (!hearted) showToast({ message: "Saved.", href: "/exhibits?tab=saved", linkLabel: "View your likes →" });
+            }}
+            aria-label={hearted ? "Remove from favourites" : "Save to favourites"}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow hover:bg-white transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
+              <path
+                d="M6.5 11S1.5 7.5 1.5 4.5a2.5 2.5 0 0 1 5-0.3 2.5 2.5 0 0 1 5 0.3C11.5 7.5 6.5 11 6.5 11Z"
+                stroke={hearted ? "#e11d48" : "currentColor"}
+                strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"
+                fill={hearted ? "#e11d48" : "none"}
+                className="text-[var(--foreground)]"
+              />
+            </svg>
+          </button>
+
+          {/* Add to collection */}
           <button
             onClick={() => setPickerOpen((v) => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-[var(--foreground)] rounded-full shadow hover:bg-white transition-colors"
