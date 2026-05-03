@@ -22,7 +22,7 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Museum of the Web",
+  title: "Patina",
   description: "9,000+ years of human creativity in one place.",
 };
 
