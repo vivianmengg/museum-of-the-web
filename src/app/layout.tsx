@@ -9,6 +9,7 @@ import CurationTray from "@/components/CurationTray";
 import { ToastProvider } from "@/components/Toast";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import FaviconRotator from "@/components/FaviconRotator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
             <CurationTray />
           </CurationProvider>
         </ToastProvider>
+        <FaviconRotator />
         <Analytics />
         <SpeedInsights />
       </body>
