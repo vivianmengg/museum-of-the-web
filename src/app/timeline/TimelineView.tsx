@@ -2,10 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
-import type { Civilization, TimelineObject } from "./page";
+import type { Civilization, TimelineObject } from "@/lib/timeline";
 
 interface Props {
-  objects: TimelineObject[];
   civilizations: Civilization[];
 }
 
@@ -204,7 +203,9 @@ const WINDOW_PRESETS = [
   { label: "±500 yr", value: 500 },
 ];
 
-export default function TimelineView({ objects, civilizations }: Props) {
+export default function TimelineView({ civilizations }: Props) {
+  const [objects, setObjects] = useState<TimelineObject[]>([]);
+  const [loading, setLoading] = useState(true);
   const [year, setYear]     = useState(0);
   const [window_, setWindow] = useState(150);
   const [dragging, setDragging] = useState(false);
@@ -217,6 +218,14 @@ export default function TimelineView({ objects, civilizations }: Props) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  // Fetch timeline objects from the API route
+  useEffect(() => {
+    fetch("/api/timeline-data")
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: TimelineObject[]) => { setObjects(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   // On mount: nudge the scrubber right then left to hint it's draggable
@@ -500,7 +509,14 @@ export default function TimelineView({ objects, civilizations }: Props) {
           );
         })}
 
-        {visible.length === 0 && (
+        {loading && (
+          <div className="flex flex-col items-center justify-center h-40 text-[var(--muted)] text-sm gap-3">
+            <div className="w-5 h-5 rounded-full border-2 border-[var(--muted)] border-t-transparent animate-spin" />
+            <p className="text-xs opacity-60">Loading collection…</p>
+          </div>
+        )}
+
+        {!loading && visible.length === 0 && (
           <div className="flex flex-col items-center justify-center h-40 text-[var(--muted)] text-sm">
             <p>No objects in this window.</p>
             <p className="text-xs mt-1 opacity-60">Try widening the time range.</p>

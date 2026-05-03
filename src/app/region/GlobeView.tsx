@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import type { Civilization } from "@/app/timeline/page";
+import type { Civilization } from "@/lib/timeline";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
