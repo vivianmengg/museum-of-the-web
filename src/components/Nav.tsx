@@ -134,6 +134,7 @@ export default function Nav() {
       <nav className="hidden sm:flex fixed top-0 left-0 right-0 z-50 items-center justify-between px-4 py-2.5 bg-white/90 backdrop-blur-sm border-b border-[var(--border)]">
         {/* Left */}
         <div className="flex items-center gap-1">
+          <Link href="/" className="font-serif text-base text-[var(--foreground)] mr-2 shrink-0">Patina</Link>
           <BrowseDropdown pathname={pathname} />
           <Link href="/explore" className={navClass("/explore")}>Explore</Link>
           <Link href="/exhibits" className={navClass("/exhibits")}>My collection</Link>
