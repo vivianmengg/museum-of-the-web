@@ -52,8 +52,27 @@ function matchesCiv(row, civ) {
   return true;
 }
 
+// Try to extract a year from a date string like "18th century" or "c. 1750"
+function parseYearFromString(dateStr) {
+  if (!dateStr) return null;
+  const centuryMatch = dateStr.match(/\b(\d{1,2})(?:st|nd|rd|th)\s+century/i);
+  if (centuryMatch) return (parseInt(centuryMatch[1]) - 1) * 100 + 50;
+  const yearMatch = dateStr.match(/\b(1[0-9]{3}|[2-9][0-9]{2})\b/);
+  if (yearMatch) return parseInt(yearMatch[1]);
+  return null;
+}
+
 function assignYear(row) {
   const yb = row.year_begin, ye = row.year_end;
+
+  // year_begin = 0 with no year_end is almost always bad seeding data (epoch default).
+  // Try to recover the real year from the date string.
+  if (yb === 0 && !ye) {
+    const parsed = parseYearFromString(row.date);
+    if (parsed && parsed > 50) return parsed;
+    return null; // skip — undatable
+  }
+
   const span = (ye ?? yb) - yb;
   if (yb < -3000) return yb;
   return span > 400 ? (ye ?? yb) : Math.round((yb + (ye ?? yb)) / 2);
