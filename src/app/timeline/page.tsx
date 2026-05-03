@@ -126,38 +126,42 @@ const COLS = "id,institution,title,date,culture,medium,image_url,thumbnail_url,i
 export default async function TimelinePage() {
   const supabase = createStaticClient();
 
-  const { data: seededRows } = await supabase
-    .from("objects_cache")
-    .select(COLS)
-    .not("thumbnail_url", "is", null)
-    .not("year_begin", "is", null)
-    .neq("institution", "harvard")
-    .neq("institution", "colbase")
-    .gte("year_begin", -7000)
-    .lte("year_begin",  2026)
-    .order("year_begin")
-    .limit(40000);
-
-  const { data: harvardNeolithicRows } = await supabase
-    .from("objects_cache")
-    .select(COLS)
-    .not("thumbnail_url", "is", null)
-    .not("year_begin", "is", null)
-    .eq("institution", "harvard")
-    .gte("year_begin", -7000)
-    .lte("year_begin", -1500)
-    .order("year_begin")
-    .limit(500);
-
-  const { data: browseRows } = await supabase
-    .from("objects_cache")
-    .select(COLS)
-    .not("thumbnail_url", "is", null)
-    .neq("institution", "harvard")
-    .neq("institution", "colbase")
-    .is("year_begin", null)
-    .neq("date", "")
-    .limit(5000);
+  const [
+    { data: seededRows },
+    { data: harvardNeolithicRows },
+    { data: browseRows },
+  ] = await Promise.all([
+    supabase
+      .from("objects_cache")
+      .select(COLS)
+      .not("thumbnail_url", "is", null)
+      .not("year_begin", "is", null)
+      .neq("institution", "harvard")
+      .neq("institution", "colbase")
+      .gte("year_begin", -7000)
+      .lte("year_begin",  2026)
+      .order("year_begin")
+      .limit(40000),
+    supabase
+      .from("objects_cache")
+      .select(COLS)
+      .not("thumbnail_url", "is", null)
+      .not("year_begin", "is", null)
+      .eq("institution", "harvard")
+      .gte("year_begin", -7000)
+      .lte("year_begin", -1500)
+      .order("year_begin")
+      .limit(500),
+    supabase
+      .from("objects_cache")
+      .select(COLS)
+      .not("thumbnail_url", "is", null)
+      .neq("institution", "harvard")
+      .neq("institution", "colbase")
+      .is("year_begin", null)
+      .neq("date", "")
+      .limit(5000),
+  ]);
 
   const rows = [...(seededRows ?? []), ...(browseRows ?? []), ...(harvardNeolithicRows ?? [])] as Record<string, unknown>[];
 
