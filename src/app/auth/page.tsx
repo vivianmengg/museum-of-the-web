@@ -37,6 +37,11 @@ function AuthForm() {
 
   async function handleGoogle() {
     const supabase = createClient();
+    // Store next in a cookie so the callback can read it even if Supabase
+    // strips query params from the redirectTo URL during OAuth validation.
+    if (next !== "/") {
+      document.cookie = `auth_return=${encodeURIComponent(next)}; path=/; max-age=300; samesite=lax`;
+    }
     const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

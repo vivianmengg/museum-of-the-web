@@ -5,7 +5,12 @@ import type { NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const rawNext = searchParams.get("next") ?? "/";
+  // ?next= may be stripped by Supabase OAuth URL validation — fall back to cookie
+  const paramNext = searchParams.get("next");
+  const cookieNext = request.cookies.get("auth_return")?.value
+    ? decodeURIComponent(request.cookies.get("auth_return")!.value)
+    : null;
+  const rawNext = paramNext ?? cookieNext ?? "/";
   // Prevent redirect loops back to /auth
   const next = rawNext.startsWith("/auth") ? "/" : rawNext;
 
@@ -37,10 +42,14 @@ export async function GET(request: NextRequest) {
       if (!profile?.onboarded) {
         const setupUrl = new URL(`${origin}/setup`);
         if (next !== "/") setupUrl.searchParams.set("next", next);
-        return NextResponse.redirect(setupUrl.toString());
+        const setupRes = NextResponse.redirect(setupUrl.toString());
+        setupRes.cookies.delete("auth_return");
+        return setupRes;
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      const res = NextResponse.redirect(`${origin}${next}`);
+      res.cookies.delete("auth_return");
+      return res;
     }
   }
 
