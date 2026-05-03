@@ -52,12 +52,25 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      if (data.user) {
+        supabase.from("users").select("username").eq("id", data.user.id).single()
+          .then(({ data: profile }) => setUsername(profile?.username ?? null));
+      }
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase.from("users").select("username").eq("id", session.user.id).single()
+          .then(({ data: profile }) => setUsername(profile?.username ?? null));
+      } else {
+        setUsername(null);
+      }
       if (event === "SIGNED_IN") syncLocalExhibits();
     });
     return () => subscription.unsubscribe();
@@ -136,7 +149,7 @@ export default function Nav() {
           {user ? (
             <div className="flex items-center gap-2">
               <Link href={`/profile/${user.id}`} className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors max-w-[100px] truncate">
-                {user.email?.split("@")[0]}
+                {username ?? user.email?.split("@")[0]}
               </Link>
               <span className="text-[var(--border)]">·</span>
               <button onClick={handleSignOut} className="text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
@@ -158,7 +171,7 @@ export default function Nav() {
         </div>
         {user ? (
           <Link href={`/profile/${user.id}`} className="shrink-0 w-7 h-7 rounded-full bg-[var(--border)] flex items-center justify-center text-xs font-medium text-[var(--foreground)]">
-            {(user.email?.split("@")[0] ?? "?")[0].toUpperCase()}
+            {(username ?? user.email?.split("@")[0] ?? "?")[0].toUpperCase()}
           </Link>
         ) : (
           <Link href={pathname.startsWith("/auth") ? "/auth" : `/auth?next=${encodeURIComponent(pathname)}`} className="shrink-0 text-xs px-3 py-1.5 border border-[var(--border)] rounded-full text-[var(--muted)]">
