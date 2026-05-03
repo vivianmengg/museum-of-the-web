@@ -3,7 +3,7 @@ import { createStaticClient } from "@/lib/supabase/static";
 import TimelineView from "./TimelineView";
 import type { MuseumObject } from "@/types";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 const MET_BASE = "https://collectionapi.metmuseum.org/public/collection/v1";
 
