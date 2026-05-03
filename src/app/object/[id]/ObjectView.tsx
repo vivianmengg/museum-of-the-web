@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { MuseumObject } from "@/types";
 import TracesSection from "@/components/TracesSection";
@@ -14,6 +15,18 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
   const [imgExpanded, setImgExpanded] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const closePicker = useCallback(() => setPickerOpen(false), []);
+  const pathname = usePathname();
+
+  // Client-side auth state — corrects server-rendered value after back navigation
+  const [userId, setUserId] = useState(currentUserId);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUserId(session?.user?.id ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Track presence on global site channel as "viewing"
   useEffect(() => {
@@ -149,11 +162,12 @@ export default function ObjectView({ object, currentUserId }: { object: MuseumOb
 
           {/* Right — interactive */}
           <div className="lg:sticky lg:top-20 lg:pl-16 pt-12 lg:pt-0">
-            <PresencePanel objectId={object.id} currentUserId={currentUserId} />
+            <PresencePanel objectId={object.id} currentUserId={userId} />
             <TracesSection
               objectId={object.id}
               institution={object.institution}
-              currentUserId={currentUserId}
+              currentUserId={userId}
+              signInHref={`/auth?next=${encodeURIComponent(pathname)}`}
             />
           </div>
 

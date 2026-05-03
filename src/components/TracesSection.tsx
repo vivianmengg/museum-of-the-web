@@ -8,9 +8,10 @@ type Props = {
   objectId: string;
   institution: string;
   currentUserId: string | null;
+  signInHref?: string;
 };
 
-export default function TracesSection({ objectId, institution, currentUserId }: Props) {
+export default function TracesSection({ objectId, institution, currentUserId, signInHref = "/auth" }: Props) {
   const [traces, setTraces] = useState<Trace[]>([]);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -89,7 +90,7 @@ export default function TracesSection({ objectId, institution, currentUserId }: 
         </form>
       ) : (
         <div className="mb-10 py-4 px-5 border border-dashed border-[var(--border)] rounded-2xl text-sm text-[var(--muted)]">
-          <Link href="/auth" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">
+          <Link href={signInHref} className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">
             Sign in
           </Link>{" "}
           to leave a trace.

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useLocalExhibits } from "@/lib/useLocalExhibits";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "./Toast";
@@ -24,6 +25,7 @@ type CloudExhibit = {
 export default function ExhibitPicker({ object, onClose }: Props) {
   const local = useLocalExhibits();
   const { show: showToast } = useToast();
+  const pathname = usePathname();
   const [signedIn, setSignedIn] = useState(false);
   const [cloudExhibits, setCloudExhibits] = useState<CloudExhibit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -278,7 +280,7 @@ export default function ExhibitPicker({ object, onClose }: Props) {
       {!signedIn && (
         <div className="px-3 py-2 border-t border-[var(--border)]">
           <p className="text-[10px] text-[var(--muted)]">
-            <a href="/auth" className="text-[var(--foreground)] underline underline-offset-2">Sign in</a>
+            <a href={`/auth?next=${encodeURIComponent(pathname)}`} className="text-[var(--foreground)] underline underline-offset-2">Sign in</a>
             {" "}to sync your collection across devices.
           </p>
         </div>
